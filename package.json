@@ -1,0 +1,34 @@
+{
+  "name": "gdi-utils",
+  "version": "1.0.0",
+  "description": "Dreamcast GDI disc image utilities project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "buildnode": "tsc -p ./tsconfig.json",
+    "runnode": "node bin/bin-nodejs/index.js",
+    "buildweb": "tsc -p ./tsconfig.web.json"
+  },
+  "author": "SONIC3D",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^7.0.18",
+    "browser-sync": "^2.14.0",
+    "glob": "^7.0.6",
+    "glob-array": "^0.1.2",
+    "gulp": "^3.9.1",
+    "gulp-clean": "^0.3.2",
+    "gulp-copy": "0.0.2",
+    "gulp-pngquant": "^1.0.10",
+    "gulp-sourcemaps": "^2.0.0-alpha",
+    "gulp-typescript": "^3.0.1",
+    "gulp-uglify": "^2.0.0",
+    "gulp-util": "^3.0.7",
+    "js-beautify": "^1.6.3",
+    "run-sequence": "^1.2.2",
+    "shelljs": "^0.7.4",
+    "string-template": "^1.0.0",
+    "typescript": "^2.3.2",
+    "xml2js": "^0.4.17"
+  }
+}
