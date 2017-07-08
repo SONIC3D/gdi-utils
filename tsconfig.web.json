@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "target": "es5",
+    "outDir": "bin/bin-web/",
+    "sourceMap": false,
+    "removeComments": false,
+    "inlineSourceMap": true,
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "experimentalDecorators": true,
+    "allowUnreachableCode": false,
+    "skipLibCheck": true,
+    "outFile": "bin/bin-web/js/main.js",
+    "pretty": true,
+    "watch": false
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
+}
