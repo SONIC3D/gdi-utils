@@ -7,13 +7,24 @@
  *
  * Copyright (c) 2017 "SONIC3D <sonic3d@gmail.com>"
  */
+import { GDITrack, GDILayout } from "./gdi-parser";
 
-/// <reference path="./MainEntry.ts" />
+module app {
+    export class MainEntry {
+        constructor() {
+            console.log("MainEntry created!");
+        }
 
-// import * as app from "./MainEntry";
-import { MainEntry } from "./MainEntry";
+        public exec(): void {
+            // TODO: Program entry logic
+            console.log("MainEntry::exec()");
+            //let gdiTrack = new GDITrack(123, 4, 2352, "track01.bin", 0);
+            let gdiObj = GDILayout.createFromFile("test.gdi");
+        }
+    }
+}
 
 console.log("Program started!");
-let instance = new MainEntry.MainEntry();
+let instance = new app.MainEntry();
 instance.exec();
 console.log("Program exit!");
