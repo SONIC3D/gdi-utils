@@ -116,8 +116,11 @@ export class GDILayout {
     }
 
     public static createFromFile(gdiFilePath: string, parseCompleteCB?: () => void): GDILayout {
-        let retVal = new GDILayout();
-        retVal.loadFromFile(gdiFilePath, (parseCompleteCB ? parseCompleteCB : undefined));
+        let retVal: GDILayout;
+        if (fs.existsSync(gdiFilePath)) {
+            retVal = new GDILayout();
+            retVal.loadFromFile(gdiFilePath, (parseCompleteCB ? parseCompleteCB : undefined));
+        }
         return retVal;
     }
 
