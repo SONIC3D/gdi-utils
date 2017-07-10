@@ -19,7 +19,7 @@ module app {
             // TODO: Program entry logic
             console.log("MainEntry::exec()");
             //let gdiTrack = new GDITrack(123, 4, 2352, "track01.bin", 0);
-            let gdiObj = GDILayout.createFromFile("test.gdi");
+            let gdiObj = GDILayout.createFromFile("test.gdi", () => {console.log("GDI file parsing finished.");});
         }
     }
 }

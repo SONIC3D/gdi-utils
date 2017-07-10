@@ -10,8 +10,6 @@ import {StringDecoder} from "string_decoder";
  */
 import * as fs from 'fs';
 import * as readline from 'readline';
-import {isNumber} from "util";
-import {strictEqual} from "assert";
 
 export class GDITrack {
     protected m_LBA: number;
@@ -45,6 +43,7 @@ export class GDILayout {
     protected m_trackCount: number;
     protected m_tracks: Map<number, GDITrack>;
     protected m_gdiFileLineParser: (lineContent: string) => void;
+    protected m_parseCompleteCB: () => void;
 
     protected constructor() {
         this.m_tracks = new Map<number, GDITrack>();
@@ -53,19 +52,24 @@ export class GDILayout {
         };
     }
 
-    public static createFromFile(gdiFilePath: string): GDILayout {
+    public static createFromFile(gdiFilePath: string, parseCompleteCB?: () => void): GDILayout {
         let retVal = new GDILayout();
-        retVal.loadFromFile(gdiFilePath);
+        retVal.loadFromFile(gdiFilePath, (parseCompleteCB ? parseCompleteCB : undefined));
         return retVal;
     }
 
-    public loadFromFile(gdiFilePath: string): void {
+    public loadFromFile(gdiFilePath: string, parseCompleteCB?: () => void): void {
+        if (parseCompleteCB)
+            this.m_parseCompleteCB = parseCompleteCB;
         let rstream = fs.createReadStream(gdiFilePath, {flags: 'r', autoClose: true});
         let rl = readline.createInterface({input: rstream});
 
         rl.on('close', () => {
             console.log(`Info: GDI file parsing finished.`);
             console.log(this.m_tracks);
+            if (this.m_parseCompleteCB) {
+                this.m_parseCompleteCB();
+            }
         });
 
         rl.on('line', (input) => {
@@ -97,7 +101,7 @@ export class GDILayout {
         // }
 
         if (this._isValidTrackInfo(arrStr)) {
-            let trackIdx:number = parseInt(arrStr[0]);
+            let trackIdx: number = parseInt(arrStr[0]);
             if (this.m_tracks.has(trackIdx)) {
                 console.log("Error: Duplicated track index in gdi file.");
             } else {
