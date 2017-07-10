@@ -9,6 +9,7 @@ import {StringDecoder} from "string_decoder";
  * Copyright (c) 2017 "SONIC3D <sonic3d@gmail.com>"
  */
 import * as fs from 'fs';
+import * as path from 'path';
 import * as readline from 'readline';
 
 class Debug {
@@ -29,6 +30,7 @@ class Debug {
 }
 
 export class GDITrack {
+    protected m_fileDir: string;
     protected m_LBA: number;
     protected m_typeId: number;     // 4 for Data and 0 for audio
     protected m_sectorSize: number;
@@ -40,14 +42,15 @@ export class GDITrack {
         return this.m_content;
     }
 
-    constructor(lba: number, type: number, sectorSize: number, filename: string, unknown: number) {
+    constructor(trackFileDir:string,lba: number, type: number, sectorSize: number, filename: string, unknown: number) {
+        this.m_fileDir = trackFileDir;
         this.m_LBA = lba;
         this.m_typeId = type;
         this.m_sectorSize = sectorSize;
         this.m_filename = filename;
         this.m_unknown = unknown;
 
-        this.m_content = new GDITrackContent(this.m_filename, this.sectorSize);
+        this.m_content = new GDITrackContent(this.m_fileDir, this.m_filename, this.sectorSize);
     }
 
     get Filename(): string {
@@ -64,19 +67,23 @@ export class GDITrack {
 }
 
 export class GDITrackContent {
+    protected m_fileDir: string;
     protected m_filename: string;
     protected m_sectorSize: number;
     protected m_stats:fs.Stats;
 
-    public constructor(filename: string, sectorSize: number) {
+    public constructor(fileDir: string, filename: string, sectorSize: number) {
+        this.m_fileDir = fileDir;
         this.m_filename = filename;
         this.m_sectorSize = (sectorSize > 0) ? sectorSize : 2352;
         this.refreshFileSystemStats();
     }
 
     protected refreshFileSystemStats():void {
-        if (fs.existsSync(this.m_filename)) {
-            this.m_stats = fs.statSync(this.m_filename);
+        let _filePath:string = path.join(this.m_fileDir, this.m_filename);
+        Debug.log(_filePath);
+        if (fs.existsSync(_filePath)) {
+            this.m_stats = fs.statSync(_filePath);
         }
     }
 
@@ -95,12 +102,14 @@ export class GDITrackContent {
 }
 
 export class GDILayout {
+    protected m_gdiFileDir: string;
+    protected m_gdiFilename: string;
     protected m_trackCount: number;
     protected m_tracks: Map<number, GDITrack>;
     protected m_gdiFileLineParser: (lineContent: string) => void;
     protected m_parseCompleteCB: () => void;
 
-    get trackCount():number {
+    get trackCount(): number {
         return this.m_trackCount;
     }
 
@@ -127,6 +136,11 @@ export class GDILayout {
     public loadFromFile(gdiFilePath: string, parseCompleteCB?: () => void): void {
         if (parseCompleteCB)
             this.m_parseCompleteCB = parseCompleteCB;
+        this.m_gdiFileDir = path.dirname(gdiFilePath);
+        this.m_gdiFilename = path.basename(gdiFilePath);
+        Debug.log(this.m_gdiFileDir);
+        Debug.log(this.m_gdiFilename);
+
         let rstream = fs.createReadStream(gdiFilePath, {flags: 'r', autoClose: true});
         let rl = readline.createInterface({input: rstream});
 
@@ -176,7 +190,7 @@ export class GDILayout {
                 let sectorSize = parseInt(arrStr[3]);
                 let trackFile = arrStr[4];
                 let unknown = parseInt(arrStr[5]);
-                this.m_tracks.set(trackIdx, new GDITrack(lba, type, sectorSize, trackFile, unknown));
+                this.m_tracks.set(trackIdx, new GDITrack(this.m_gdiFileDir, lba, type, sectorSize, trackFile, unknown));
             }
         }
     }
