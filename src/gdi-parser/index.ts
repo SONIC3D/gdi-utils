@@ -18,12 +18,19 @@ export class GDITrack {
     protected m_filename: string;
     protected m_unknown: number;
 
+    protected m_content:GDITrackContent;
+    get content():GDITrackContent {
+        return this.m_content;
+    }
+
     constructor(lba: number, type: number, sectorSize: number, filename: string, unknown: number) {
         this.m_LBA = lba;
         this.m_typeId = type;
         this.m_sectorSize = sectorSize;
         this.m_filename = filename;
         this.m_unknown = unknown;
+
+        this.m_content = new GDITrackContent(this.m_filename, this.sectorSize);
     }
 
     get Filename(): string {
@@ -39,11 +46,50 @@ export class GDITrack {
     }
 }
 
+export class GDITrackContent {
+    protected m_filename: string;
+    protected m_sectorSize: number;
+    protected m_stats:fs.Stats;
+
+    public constructor(filename: string, sectorSize: number) {
+        this.m_filename = filename;
+        this.m_sectorSize = (sectorSize > 0) ? sectorSize : 2352;
+        this.refreshFileSystemStats();
+    }
+
+    protected refreshFileSystemStats():void {
+        if (fs.existsSync(this.m_filename)) {
+            this.m_stats = fs.statSync(this.m_filename);
+        }
+    }
+
+    get isValid():boolean {
+        let retVal:boolean = ((this.m_stats) && (this.m_stats.isFile()) && ((this.m_stats.size % this.m_sectorSize) == 0));
+        return retVal;
+    }
+
+    get lengthInByte():number {
+        return this.m_stats.size;
+    }
+
+    get lengthInSector():number {
+        return this.lengthInByte / this.m_sectorSize;
+    }
+}
+
 export class GDILayout {
     protected m_trackCount: number;
     protected m_tracks: Map<number, GDITrack>;
     protected m_gdiFileLineParser: (lineContent: string) => void;
     protected m_parseCompleteCB: () => void;
+
+    get trackCount():number {
+        return this.m_trackCount;
+    }
+
+    get tracks(): Map<number, GDITrack> {
+        return this.m_tracks;
+    }
 
     protected constructor() {
         this.m_tracks = new Map<number, GDITrack>();
