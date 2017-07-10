@@ -11,6 +11,23 @@ import {StringDecoder} from "string_decoder";
 import * as fs from 'fs';
 import * as readline from 'readline';
 
+class Debug {
+    public static EnableOutputLog:boolean = false;
+    public static EnableOutputError:boolean = true;
+
+    public static log(message?: any, ...optionalParams: any[]): void {
+        if (Debug.EnableOutputLog) {
+            console.log(message, ...optionalParams);
+        }
+    }
+
+    public static error(message?: any, ...optionalParams: any[]): void {
+        if (Debug.EnableOutputError) {
+            console.error(message, ...optionalParams);
+        }
+    }
+}
+
 export class GDITrack {
     protected m_LBA: number;
     protected m_typeId: number;     // 4 for Data and 0 for audio
@@ -111,21 +128,21 @@ export class GDILayout {
         let rl = readline.createInterface({input: rstream});
 
         rl.on('close', () => {
-            console.log(`Info: GDI file parsing finished.`);
-            console.log(this.m_tracks);
+            Debug.log(`Info: GDI file parsing finished.`);
+            Debug.log(this.m_tracks);
             if (this.m_parseCompleteCB) {
                 this.m_parseCompleteCB();
             }
         });
 
         rl.on('line', (input) => {
-            // console.log(`Received: ${input}`);
+            // Debug.log(`Received: ${input}`);
             this.m_gdiFileLineParser(input);
         });
     }
 
     private _gdiLineParser_TrackCountLine(lineContent: string): void {
-        console.log(`IndexLine: ${lineContent}`);
+        Debug.log(`IndexLine: ${lineContent}`);
         let result = parseInt(lineContent);
 
         // Alter to line parser callback
@@ -138,18 +155,18 @@ export class GDILayout {
     }
 
     private _gdiLineParser_TrackContentLine(lineContent: string): void {
-        console.log(`TrackLine: ${lineContent}`);
+        Debug.log(`TrackLine: ${lineContent}`);
         let arrStr: Array<string> = lineContent.split(/\s+/);
 
         // // Debug log parsed results for this line
         // for (let i=0;i<arrStr.length;i++) {
-        //     console.log(arrStr[i]);
+        //     Debug.log(arrStr[i]);
         // }
 
         if (this._isValidTrackInfo(arrStr)) {
             let trackIdx: number = parseInt(arrStr[0]);
             if (this.m_tracks.has(trackIdx)) {
-                console.log("Error: Duplicated track index in gdi file.");
+                Debug.error("Error: Duplicated track index in gdi file.");
             } else {
                 let lba = parseInt(arrStr[1]);
                 let type = parseInt(arrStr[2]);
