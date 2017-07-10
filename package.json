@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "buildnode": "tsc -p ./tsconfig.json",
     "runnode": "node bin/bin-nodejs/index.js",
+    "runnode_debug": "node %NODE_DEBUG_OPTION% bin/bin-nodejs/index.js",
     "buildweb": "tsc -p ./tsconfig.web.json"
   },
   "author": "SONIC3D",
