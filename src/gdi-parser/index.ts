@@ -174,6 +174,18 @@ export class GDITrackContent {
     get lengthInSector(): number {
         return this.lengthInByte / this.m_sectorSize;
     }
+
+    public readByteData(buffer: Buffer, offset: number, length: number): number {
+        let retVal: number = 0;
+
+        let _filePath: string = path.join(this.m_fileDir, this.m_filename);
+        if (fs.existsSync(_filePath)) {
+            let fd = fs.openSync(_filePath, 'r');
+            retVal = fs.readSync(fd, buffer, offset, length, 0);
+            fs.closeSync(fd);
+        }
+        return retVal;
+    }
 }
 
 export class GDILayout {
