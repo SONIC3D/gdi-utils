@@ -25,6 +25,7 @@ module app {
                 console.log("GDI file parsing finished.");
 
                 for (let i = 1; i <= this.m_gdiObj.trackCount; i++) {
+                    console.log(`==========`);
                     let currTrack = this.m_gdiObj.tracks.get(i);
                     if (currTrack) {
                         let _valid = currTrack.content.isValid
@@ -32,6 +33,11 @@ module app {
                         if (_valid) {
                             console.log(`Size in byte: ${currTrack.content.lengthInByte}`);
                             console.log(`Size in sector: ${currTrack.content.lengthInSector}`);
+                            console.log(`Track PreGap length: ${currTrack.preGapLengthInSector}`);
+                            console.log(`Track start LBA of PreGap: ${currTrack.startLBA_PreGap}`);
+                            console.log(`Track start LBA of Data: ${currTrack.startLBA_Data}`);
+                            console.log(`Track end LBA: ${currTrack.endLBA}`);
+                            console.log(`Track is overlapped with previous track: ${currTrack.isOverlappedWithPreviousTrack}`);
                         }
                     }
                 }

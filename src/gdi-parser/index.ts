@@ -32,7 +32,11 @@ class Debug {
 
 export class GDITrack {
     protected static debugLog: (msg: string, ...param: any[]) => void = util.debuglog("GDITrack");
+
+    protected m_parentGdi: GDILayout;
     protected m_fileDir: string;
+    protected m_idxInParentGdi: number;
+
     protected m_LBA: number;
     protected m_typeId: number;     // 4 for Data and 0 for audio
     protected m_sectorSize: number;
@@ -45,8 +49,11 @@ export class GDITrack {
         return this.m_content;
     }
 
-    constructor(trackFileDir: string, lba: number, type: number, sectorSize: number, filename: string, unknown: number) {
+    constructor(parentGdi:GDILayout, trackFileDir: string, indexInParentGdi:number, lba: number, type: number, sectorSize: number, filename: string, unknown: number) {
+        this.m_parentGdi = parentGdi;
         this.m_fileDir = trackFileDir;
+        this.m_idxInParentGdi = indexInParentGdi;
+
         this.m_LBA = lba;
         this.m_typeId = type;
         this.m_sectorSize = sectorSize;
@@ -56,16 +63,80 @@ export class GDITrack {
         this.m_content = new GDITrackContent(this.m_fileDir, this.m_filename, this.sectorSize);
     }
 
-    get Filename(): string {
+    get trackId(): number {
+        return this.m_idxInParentGdi;
+    }
+
+    get filename(): string {
         return this.m_filename;
     }
 
-    get TypeId(): number {
+    /**
+     * Type id of the current track. 0 for Audio track and 4 for data track.
+     * @returns {number}
+     */
+    get typeId(): number {
         return this.m_typeId;
     }
 
     get sectorSize(): number {
         return this.m_sectorSize;
+    }
+
+    get isAudioTrack(): boolean {
+        return (this.typeId == 0);
+    }
+
+    /**
+     * Audio track should have a pre gap of 150 sectors
+     */
+    get preGapLengthInSector(): number {
+        return (this.isAudioTrack ? 150 : 0);
+    }
+
+    get startLBA_PreGap(): number {
+        return this.m_LBA - this.preGapLengthInSector;
+    }
+
+    get startLBA_Data(): number {
+        return this.m_LBA;
+    }
+
+    /**
+     * LBA that current track ends on.(It not the 'last' sector of current track, but the start LBA of the next track with PreGap data)
+     * @returns {number}
+     */
+    get endLBA(): number {
+        return this.startLBA_Data + this.m_content.lengthInSector;
+    }
+
+    /**
+     * For redump format GDI audio track, there is 150 sectors embedded pre gap data in the current track file head part.
+     * There is no such embedded data in TruRip or Tosec GDI image.
+     */
+    get isPreGapDataEmbedded(): boolean {
+        let retVal = false;
+        if (this.isAudioTrack) {
+            // TODO: Using overlap attribute is not accurate. For multiple audio tracks with embedded pre gap data, only the first track would be identified as pre gap data embedded.
+            // TODO: The proper way is reading 16 byte from the track head. If it's filled with 0x00, then that's the embedded pre gap data.
+            retVal = this.isOverlappedWithPreviousTrack;
+        }
+        return retVal;
+    }
+
+    /**
+     * For redump format GDI, if audio track are dealed as TruRip or Tosec GDI format, the first audio track following a data track would be overlapped with previous data track in pre gap region.
+     * @returns {boolean}
+     */
+    get isOverlappedWithPreviousTrack(): boolean {
+        let retVal = false;
+        if ((this.trackId!=1) && (this.trackId !=3)) {
+            let preTrack = this.m_parentGdi.tracks.get(this.trackId-1);
+            if ((preTrack) && (preTrack.endLBA > this.startLBA_PreGap)) {
+                retVal = true;
+            }
+        }
+        return retVal;
     }
 }
 
@@ -195,7 +266,7 @@ export class GDILayout {
                 let sectorSize = parseInt(arrStr[3]);
                 let trackFile = arrStr[4];
                 let unknown = parseInt(arrStr[5]);
-                this.m_tracks.set(trackIdx, new GDITrack(this.m_gdiFileDir, lba, type, sectorSize, trackFile, unknown));
+                this.m_tracks.set(trackIdx, new GDITrack(this, this.m_gdiFileDir, trackIdx, lba, type, sectorSize, trackFile, unknown));
             }
         }
     }
