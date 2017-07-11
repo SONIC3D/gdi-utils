@@ -31,7 +31,7 @@ class Debug {
 }
 
 export class GDITrack {
-    protected static debugLog:(msg: string, ...param: any[]) => void = util.debuglog("GDITrack");
+    protected static debugLog: (msg: string, ...param: any[]) => void = util.debuglog("GDITrack");
     protected m_fileDir: string;
     protected m_LBA: number;
     protected m_typeId: number;     // 4 for Data and 0 for audio
@@ -39,12 +39,13 @@ export class GDITrack {
     protected m_filename: string;
     protected m_unknown: number;
 
-    protected m_content:GDITrackContent;
-    get content():GDITrackContent {
+    protected m_content: GDITrackContent;
+
+    get content(): GDITrackContent {
         return this.m_content;
     }
 
-    constructor(trackFileDir:string,lba: number, type: number, sectorSize: number, filename: string, unknown: number) {
+    constructor(trackFileDir: string, lba: number, type: number, sectorSize: number, filename: string, unknown: number) {
         this.m_fileDir = trackFileDir;
         this.m_LBA = lba;
         this.m_typeId = type;
@@ -69,11 +70,11 @@ export class GDITrack {
 }
 
 export class GDITrackContent {
-    protected static debugLog:(msg: string, ...param: any[]) => void = util.debuglog("GDITrackContent");
+    protected static debugLog: (msg: string, ...param: any[]) => void = util.debuglog("GDITrackContent");
     protected m_fileDir: string;
     protected m_filename: string;
     protected m_sectorSize: number;
-    protected m_stats:fs.Stats;
+    protected m_stats: fs.Stats;
 
     public constructor(fileDir: string, filename: string, sectorSize: number) {
         this.m_fileDir = fileDir;
@@ -82,30 +83,30 @@ export class GDITrackContent {
         this.refreshFileSystemStats();
     }
 
-    protected refreshFileSystemStats():void {
-        let _filePath:string = path.join(this.m_fileDir, this.m_filename);
+    protected refreshFileSystemStats(): void {
+        let _filePath: string = path.join(this.m_fileDir, this.m_filename);
         GDITrackContent.debugLog(`Track file path: ${_filePath}.`);
         if (fs.existsSync(_filePath)) {
             this.m_stats = fs.statSync(_filePath);
         }
     }
 
-    get isValid():boolean {
-        let retVal:boolean = ((this.m_stats) && (this.m_stats.isFile()) && ((this.m_stats.size % this.m_sectorSize) == 0));
+    get isValid(): boolean {
+        let retVal: boolean = ((this.m_stats) && (this.m_stats.isFile()) && ((this.m_stats.size % this.m_sectorSize) == 0));
         return retVal;
     }
 
-    get lengthInByte():number {
+    get lengthInByte(): number {
         return this.m_stats.size;
     }
 
-    get lengthInSector():number {
+    get lengthInSector(): number {
         return this.lengthInByte / this.m_sectorSize;
     }
 }
 
 export class GDILayout {
-    protected static debugLog:(msg: string, ...param: any[]) => void = util.debuglog("GDILayout");
+    protected static debugLog: (msg: string, ...param: any[]) => void = util.debuglog("GDILayout");
     protected m_gdiFileDir: string;
     protected m_gdiFilename: string;
     protected m_trackCount: number;
