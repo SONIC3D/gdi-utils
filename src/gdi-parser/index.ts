@@ -49,7 +49,7 @@ export class GDITrack {
         return this.m_content;
     }
 
-    constructor(parentGdi:GDILayout, trackFileDir: string, indexInParentGdi:number, lba: number, type: number, sectorSize: number, filename: string, unknown: number) {
+    constructor(parentGdi: GDILayout, trackFileDir: string, indexInParentGdi: number, lba: number, type: number, sectorSize: number, filename: string, unknown: number) {
         this.m_parentGdi = parentGdi;
         this.m_fileDir = trackFileDir;
         this.m_idxInParentGdi = indexInParentGdi;
@@ -117,9 +117,19 @@ export class GDITrack {
     get isPreGapDataEmbedded(): boolean {
         let retVal = false;
         if (this.isAudioTrack) {
-            // TODO: Using overlap attribute is not accurate. For multiple audio tracks with embedded pre gap data, only the first track would be identified as pre gap data embedded.
-            // TODO: The proper way is reading 16 byte from the track head. If it's filled with 0x00, then that's the embedded pre gap data.
-            retVal = this.isOverlappedWithPreviousTrack;
+            // Reading 16 byte from the track head. If it's filled with 0x00, then that's the embedded pre gap data.
+            retVal = true;
+            let buffer: Buffer = new Buffer(16);
+            if (this.content.readByteData(buffer, 0, 16) == 16) {
+                GDITrack.debugLog(buffer.toString('hex'));
+                for (let i = 0; i < buffer.byteLength; i++) {
+                    let currByte = buffer.readUInt8(i);
+                    if (currByte != 0) {
+                        retVal = false;
+                        break;
+                    }
+                }
+            }
         }
         return retVal;
     }
@@ -130,8 +140,8 @@ export class GDITrack {
      */
     get isOverlappedWithPreviousTrack(): boolean {
         let retVal = false;
-        if ((this.trackId!=1) && (this.trackId !=3)) {
-            let preTrack = this.m_parentGdi.tracks.get(this.trackId-1);
+        if ((this.trackId != 1) && (this.trackId != 3)) {
+            let preTrack = this.m_parentGdi.tracks.get(this.trackId - 1);
             if ((preTrack) && (preTrack.endLBA > this.startLBA_PreGap)) {
                 retVal = true;
             }

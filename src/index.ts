@@ -37,6 +37,7 @@ module app {
                             console.log(`Track start LBA of PreGap: ${currTrack.startLBA_PreGap}`);
                             console.log(`Track start LBA of Data: ${currTrack.startLBA_Data}`);
                             console.log(`Track end LBA: ${currTrack.endLBA}`);
+                            console.log(`Track is PreGap data embedded: ${currTrack.isPreGapDataEmbedded}`);
                             console.log(`Track is overlapped with previous track: ${currTrack.isOverlappedWithPreviousTrack}`);
                         }
                     }
