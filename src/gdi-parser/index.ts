@@ -11,10 +11,11 @@ import {StringDecoder} from "string_decoder";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
+import * as util from 'util';
 
 class Debug {
-    public static EnableOutputLog:boolean = false;
-    public static EnableOutputError:boolean = true;
+    public static EnableOutputLog: boolean = false;
+    public static EnableOutputError: boolean = true;
 
     public static log(message?: any, ...optionalParams: any[]): void {
         if (Debug.EnableOutputLog) {
@@ -30,6 +31,7 @@ class Debug {
 }
 
 export class GDITrack {
+    protected static debugLog:(msg: string, ...param: any[]) => void = util.debuglog("GDITrack");
     protected m_fileDir: string;
     protected m_LBA: number;
     protected m_typeId: number;     // 4 for Data and 0 for audio
@@ -67,6 +69,7 @@ export class GDITrack {
 }
 
 export class GDITrackContent {
+    protected static debugLog:(msg: string, ...param: any[]) => void = util.debuglog("GDITrackContent");
     protected m_fileDir: string;
     protected m_filename: string;
     protected m_sectorSize: number;
@@ -81,7 +84,7 @@ export class GDITrackContent {
 
     protected refreshFileSystemStats():void {
         let _filePath:string = path.join(this.m_fileDir, this.m_filename);
-        Debug.log(_filePath);
+        GDITrackContent.debugLog(`Track file path: ${_filePath}.`);
         if (fs.existsSync(_filePath)) {
             this.m_stats = fs.statSync(_filePath);
         }
@@ -102,6 +105,7 @@ export class GDITrackContent {
 }
 
 export class GDILayout {
+    protected static debugLog:(msg: string, ...param: any[]) => void = util.debuglog("GDILayout");
     protected m_gdiFileDir: string;
     protected m_gdiFilename: string;
     protected m_trackCount: number;
@@ -138,28 +142,28 @@ export class GDILayout {
             this.m_parseCompleteCB = parseCompleteCB;
         this.m_gdiFileDir = path.dirname(gdiFilePath);
         this.m_gdiFilename = path.basename(gdiFilePath);
-        Debug.log(this.m_gdiFileDir);
-        Debug.log(this.m_gdiFilename);
+        GDILayout.debugLog(this.m_gdiFileDir);
+        GDILayout.debugLog(this.m_gdiFilename);
 
         let rstream = fs.createReadStream(gdiFilePath, {flags: 'r', autoClose: true});
         let rl = readline.createInterface({input: rstream});
 
         rl.on('close', () => {
-            Debug.log(`Info: GDI file parsing finished.`);
-            Debug.log(this.m_tracks);
+            GDILayout.debugLog(`Info: GDI file parsing finished.`);
+            GDILayout.debugLog(JSON.stringify([...this.m_tracks], null, 4));
             if (this.m_parseCompleteCB) {
                 this.m_parseCompleteCB();
             }
         });
 
         rl.on('line', (input) => {
-            // Debug.log(`Received: ${input}`);
+            // GDILayout.debugLog(`Received: ${input}`);
             this.m_gdiFileLineParser(input);
         });
     }
 
     private _gdiLineParser_TrackCountLine(lineContent: string): void {
-        Debug.log(`IndexLine: ${lineContent}`);
+        GDILayout.debugLog(`IndexLine: ${lineContent}`);
         let result = parseInt(lineContent);
 
         // Alter to line parser callback
@@ -172,12 +176,12 @@ export class GDILayout {
     }
 
     private _gdiLineParser_TrackContentLine(lineContent: string): void {
-        Debug.log(`TrackLine: ${lineContent}`);
+        GDILayout.debugLog(`TrackLine: ${lineContent}`);
         let arrStr: Array<string> = lineContent.split(/\s+/);
 
         // // Debug log parsed results for this line
         // for (let i=0;i<arrStr.length;i++) {
-        //     Debug.log(arrStr[i]);
+        //     GDILayout.debugLog(arrStr[i]);
         // }
 
         if (this._isValidTrackInfo(arrStr)) {
