@@ -308,4 +308,28 @@ export class GDILayout {
 
         return retVal;
     }
+
+    public printInfo(): void {
+        if (this.trackCount > 0) {
+            for (let [currTrkIdx, currTrack] of this.tracks) {
+                console.log(`========== Track ${currTrkIdx} Info ==========`);
+                if (currTrack) {
+                    let _valid = currTrack.content.isValid;
+                    console.log(`Valid:                             ${_valid ? "valid" : "invalid"}`);
+                    if (_valid) {
+                        console.log(`Size(Byte):                        ${currTrack.content.lengthInByte}`);
+                        console.log(`Size(Sector):                      ${currTrack.content.lengthInSector}`);
+                        console.log(`PreGap length:                     ${currTrack.preGapLengthInSector}`);
+                        console.log(`Start LBA(PreGap):                 ${currTrack.startLBA_PreGap}`);
+                        console.log(`Start LBA(Data):                   ${currTrack.startLBA_Data}`);
+                        console.log(`End LBA:                           ${currTrack.endLBA}`);
+                        console.log(`PreGap data embedded:              ${currTrack.isPreGapDataEmbedded}`);
+                        console.log(`Overlapped with previous track:    ${currTrack.isOverlappedWithPreviousTrack}`);
+                    }
+                } else {
+                    console.log("<Empty track>");
+                }
+            }
+        }
+    }
 }
