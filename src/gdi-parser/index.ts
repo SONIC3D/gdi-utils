@@ -1,4 +1,3 @@
-import {StringDecoder} from "string_decoder";
 /**
  * index.ts
  * Created on 2017/七月/09
