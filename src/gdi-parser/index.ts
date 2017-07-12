@@ -205,7 +205,7 @@ export class GDILayout {
     protected m_trackCount: number;
     protected m_tracks: Map<number, GDITrack>;
     protected m_gdiFileLineParser: (lineContent: string) => void;
-    protected m_parseCompleteCB: () => void;
+    protected m_parseCompleteCB: (gdiLayout:GDILayout) => void;
 
     get trackCount(): number {
         return this.m_trackCount;
@@ -222,7 +222,7 @@ export class GDILayout {
         };
     }
 
-    public static createFromFile(gdiFilePath: string, parseCompleteCB?: () => void): GDILayout {
+    public static createFromFile(gdiFilePath: string, parseCompleteCB?: (gdiLayout:GDILayout) => void): GDILayout {
         let retVal: GDILayout;
         if (fs.existsSync(gdiFilePath)) {
             retVal = new GDILayout();
@@ -231,7 +231,7 @@ export class GDILayout {
         return retVal;
     }
 
-    public loadFromFile(gdiFilePath: string, parseCompleteCB?: () => void): void {
+    public loadFromFile(gdiFilePath: string, parseCompleteCB?: (gdiLayout: GDILayout) => void): void {
         if (parseCompleteCB)
             this.m_parseCompleteCB = parseCompleteCB;
         this.m_gdiFileDir = path.dirname(gdiFilePath);
@@ -246,7 +246,7 @@ export class GDILayout {
             GDILayout.debugLog(`Info: GDI file parsing finished.`);
             GDILayout.debugLog(JSON.stringify([...this.m_tracks], null, 4));
             if (this.m_parseCompleteCB) {
-                this.m_parseCompleteCB();
+                this.m_parseCompleteCB(this);
             }
         });
 

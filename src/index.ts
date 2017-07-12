@@ -11,8 +11,6 @@ import { GDITrack, GDILayout } from "./gdi-parser";
 
 module app {
     export class MainEntry {
-        protected m_gdiObj: GDILayout;
-
         constructor() {
             console.log("MainEntry created!");
         }
@@ -21,12 +19,12 @@ module app {
             // TODO: Program entry logic
             console.log("MainEntry::exec()");
             //let gdiTrack = new GDITrack(123, 4, 2352, "track01.bin", 0);
-            this.m_gdiObj = GDILayout.createFromFile("test.gdi", () => {
+            GDILayout.createFromFile("test.gdi", () => {
                 console.log("GDI file parsing finished.");
 
-                for (let i = 1; i <= this.m_gdiObj.trackCount; i++) {
+                for (let i = 1; i <= gdiLayout.trackCount; i++) {
                     console.log(`==========`);
-                    let currTrack = this.m_gdiObj.tracks.get(i);
+                    let currTrack = gdiLayout.tracks.get(i);
                     if (currTrack) {
                         let _valid = currTrack.content.isValid
                         console.log(`Track ${i} is ${_valid ? "valid" : "invalid"}`);
