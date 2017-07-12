@@ -301,6 +301,16 @@ export class GDILayout {
         });
     }
 
+    public unload(): void {
+        if (this.trackCount > 0) {
+            for (let [idx, track] of this.tracks) {
+                if (track) {
+                    track.content.unload();
+                }
+            }
+        }
+    }
+
     private _gdiLineParser_TrackCountLine(lineContent: string): void {
         GDILayout.debugLog(`IndexLine: ${lineContent}`);
         let result = parseInt(lineContent);
