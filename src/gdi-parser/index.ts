@@ -11,23 +11,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
 import * as util from 'util';
-
-class Debug {
-    public static EnableOutputLog: boolean = false;
-    public static EnableOutputError: boolean = true;
-
-    public static log(message?: any, ...optionalParams: any[]): void {
-        if (Debug.EnableOutputLog) {
-            console.log(message, ...optionalParams);
-        }
-    }
-
-    public static error(message?: any, ...optionalParams: any[]): void {
-        if (Debug.EnableOutputError) {
-            console.error(message, ...optionalParams);
-        }
-    }
-}
+import { Debug } from './dbg-util';
 
 export class GDITrack {
     protected static debugLog: (msg: string, ...param: any[]) => void = util.debuglog("GDITrack");
