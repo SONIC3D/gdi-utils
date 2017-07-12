@@ -129,6 +129,8 @@ export class GDITrack {
                         break;
                     }
                 }
+            } else {
+                Debug.error("GDITrack.isPreGapDataEmbedded Error: Failed to read data from track!");
             }
         }
         return retVal;
@@ -158,6 +160,7 @@ export class GDITrackContent {
     protected m_filename: string;
     protected m_sectorSize: number;
     protected m_stats: fs.Stats;
+    protected m_fd: number;         // File descriptor for the opened track file
 
     public constructor(trackObj: GDITrack, fileDir: string, filename: string, sectorSize: number) {
         this.m_track = trackObj;
@@ -165,6 +168,7 @@ export class GDITrackContent {
         this.m_filename = filename;
         this.m_sectorSize = (sectorSize > 0) ? sectorSize : 2352;
         this.refreshFileSystemStats();
+        this.openTrackFile();
     }
 
     protected refreshFileSystemStats(): void {
@@ -172,6 +176,27 @@ export class GDITrackContent {
         GDITrackContent.debugLog(`Track file path: ${_filePath}.`);
         if (fs.existsSync(_filePath)) {
             this.m_stats = fs.statSync(_filePath);
+        }
+    }
+
+    protected openTrackFile(): void {
+        let _filePath: string = path.join(this.m_fileDir, this.m_filename);
+        if (fs.existsSync(_filePath)) {
+            try {
+                this.m_fd = fs.openSync(_filePath, 'r');
+            } catch (e) {
+                Debug.error('openTrackFile Error:', e);
+            }
+        }
+    }
+
+    protected closeTrackFile(): void {
+        if (this.m_fd) {
+            try {
+                fs.closeSync(this.m_fd);
+            } catch (e) {
+                Debug.error('closeTrackFile Error:', e);
+            }
         }
     }
 
@@ -192,14 +217,25 @@ export class GDITrackContent {
         return this.lengthInByte / this.m_sectorSize;
     }
 
+    /**
+     * Unload opened files and allocated resource for current track
+     */
+    public unload(): void {
+        GDITrackContent.debugLog(`Unloading Track ${this.m_track.trackId} content ...`);
+        this.closeTrackFile();
+    }
+
+    /**
+     * Read specific length of data in byte into target buffer from the offset relative to the start of the track file
+     * @param buffer
+     * @param offset
+     * @param length
+     * @returns {number} The actual length of the data that read
+     */
     public readByteData(buffer: Buffer, offset: number, length: number): number {
         let retVal: number = 0;
-
-        let _filePath: string = path.join(this.m_fileDir, this.m_filename);
-        if (fs.existsSync(_filePath)) {
-            let fd = fs.openSync(_filePath, 'r');
-            retVal = fs.readSync(fd, buffer, offset, length, 0);
-            fs.closeSync(fd);
+        if (this.m_fd) {
+            retVal = fs.readSync(this.m_fd, buffer, offset, length, 0);
         }
         return retVal;
     }
@@ -212,7 +248,7 @@ export class GDILayout {
     protected m_trackCount: number;
     protected m_tracks: Map<number, GDITrack>;
     protected m_gdiFileLineParser: (lineContent: string) => void;
-    protected m_parseCompleteCB: (gdiLayout:GDILayout) => void;
+    protected m_parseCompleteCB: (gdiLayout: GDILayout) => void;
 
     get trackCount(): number {
         return this.m_trackCount;
