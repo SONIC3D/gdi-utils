@@ -60,7 +60,7 @@ export class GDITrack {
         this.m_filename = filename;
         this.m_unknown = unknown;
 
-        this.m_content = new GDITrackContent(this.m_fileDir, this.m_filename, this.sectorSize);
+        this.m_content = new GDITrackContent(this, this.m_fileDir, this.m_filename, this.sectorSize);
     }
 
     get trackId(): number {
@@ -152,12 +152,15 @@ export class GDITrack {
 
 export class GDITrackContent {
     protected static debugLog: (msg: string, ...param: any[]) => void = util.debuglog("GDITrackContent");
+
+    protected m_track: GDITrack;
     protected m_fileDir: string;
     protected m_filename: string;
     protected m_sectorSize: number;
     protected m_stats: fs.Stats;
 
-    public constructor(fileDir: string, filename: string, sectorSize: number) {
+    public constructor(trackObj: GDITrack, fileDir: string, filename: string, sectorSize: number) {
+        this.m_track = trackObj;
         this.m_fileDir = fileDir;
         this.m_filename = filename;
         this.m_sectorSize = (sectorSize > 0) ? sectorSize : 2352;
@@ -227,7 +230,7 @@ export class GDILayout {
         };
     }
 
-    public static createFromFile(gdiFilePath: string, parseCompleteCB?: (gdiLayout:GDILayout) => void): GDILayout {
+    public static createFromFile(gdiFilePath: string, parseCompleteCB?: (gdiLayout: GDILayout) => void): GDILayout {
         let retVal: GDILayout;
         if (fs.existsSync(gdiFilePath)) {
             retVal = new GDILayout();
@@ -249,7 +252,8 @@ export class GDILayout {
 
         rl.on('close', () => {
             GDILayout.debugLog(`Info: GDI file parsing finished.`);
-            GDILayout.debugLog(JSON.stringify([...this.m_tracks], null, 4));
+            // GDILayout.debugLog(JSON.stringify([...this.m_tracks], null, 4));
+            GDILayout.debugLog(util.inspect(this, {depth: null}));
             if (this.m_parseCompleteCB) {
                 this.m_parseCompleteCB(this);
             }
