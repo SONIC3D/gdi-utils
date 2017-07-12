@@ -7,7 +7,7 @@
  *
  * Copyright (c) 2017 "SONIC3D <sonic3d@gmail.com>"
  */
-import { GDITrack, GDILayout } from "./gdi-parser";
+import { GDITrack, GDIDisc } from "./gdi-parser";
 
 module app {
     export class MainEntry {
@@ -19,7 +19,7 @@ module app {
             // TODO: Program entry logic
             console.log("MainEntry::exec()");
             //let gdiTrack = new GDITrack(123, 4, 2352, "track01.bin", 0);
-            GDILayout.createFromFile("test.gdi", () => {
+            GDIDisc.createFromFile("test.gdi", () => {
                 console.log("GDI file parsing finished.");
 
                 gdiLayout.printInfo();

@@ -16,7 +16,7 @@ import { Debug } from './dbg-util';
 export class GDITrack {
     protected static debugLog: (msg: string, ...param: any[]) => void = util.debuglog("GDITrack");
 
-    protected m_parentGdi: GDILayout;
+    protected m_parentGdi: GDIDisc;
     protected m_fileDir: string;
     protected m_idxInParentGdi: number;
 
@@ -32,7 +32,7 @@ export class GDITrack {
         return this.m_content;
     }
 
-    constructor(parentGdi: GDILayout, trackFileDir: string, indexInParentGdi: number, lba: number, type: number, sectorSize: number, filename: string, unknown: number) {
+    constructor(parentGdi: GDIDisc, trackFileDir: string, indexInParentGdi: number, lba: number, type: number, sectorSize: number, filename: string, unknown: number) {
         this.m_parentGdi = parentGdi;
         this.m_fileDir = trackFileDir;
         this.m_idxInParentGdi = indexInParentGdi;
@@ -224,14 +224,14 @@ export class GDITrackContent {
     }
 }
 
-export class GDILayout {
-    protected static debugLog: (msg: string, ...param: any[]) => void = util.debuglog("GDILayout");
+export class GDIDisc {
+    protected static debugLog: (msg: string, ...param: any[]) => void = util.debuglog("GDIDisc");
     protected m_gdiFileDir: string;
     protected m_gdiFilename: string;
     protected m_trackCount: number;
     protected m_tracks: Map<number, GDITrack>;
     protected m_gdiFileLineParser: (lineContent: string) => void;
-    protected m_parseCompleteCB: (gdiLayout: GDILayout) => void;
+    protected m_parseCompleteCB: (gdiLayout: GDIDisc) => void;
 
     get trackCount(): number {
         return this.m_trackCount;
@@ -249,37 +249,37 @@ export class GDILayout {
         };
     }
 
-    public static createFromFile(gdiFilePath: string, parseCompleteCB?: (gdiLayout: GDILayout) => void): GDILayout {
-        let retVal: GDILayout;
+    public static createFromFile(gdiFilePath: string, parseCompleteCB?: (gdiLayout: GDIDisc) => void): GDIDisc {
+        let retVal: GDIDisc;
         if (fs.existsSync(gdiFilePath)) {
-            retVal = new GDILayout();
+            retVal = new GDIDisc();
             retVal.loadFromFile(gdiFilePath, (parseCompleteCB ? parseCompleteCB : undefined));
         }
         return retVal;
     }
 
-    public loadFromFile(gdiFilePath: string, parseCompleteCB?: (gdiLayout: GDILayout) => void): void {
+    public loadFromFile(gdiFilePath: string, parseCompleteCB?: (gdiLayout: GDIDisc) => void): void {
         if (parseCompleteCB)
             this.m_parseCompleteCB = parseCompleteCB;
         this.m_gdiFileDir = path.dirname(gdiFilePath);
         this.m_gdiFilename = path.basename(gdiFilePath);
-        GDILayout.debugLog(this.m_gdiFileDir);
-        GDILayout.debugLog(this.m_gdiFilename);
+        GDIDisc.debugLog(this.m_gdiFileDir);
+        GDIDisc.debugLog(this.m_gdiFilename);
 
         let rstream = fs.createReadStream(gdiFilePath, {flags: 'r', autoClose: true});
         let rl = readline.createInterface({input: rstream});
 
         rl.on('close', () => {
-            GDILayout.debugLog(`Info: GDI file parsing finished.`);
-            // GDILayout.debugLog(JSON.stringify([...this.m_tracks], null, 4));
-            GDILayout.debugLog(util.inspect(this, {depth: null}));
+            GDIDisc.debugLog(`Info: GDI file parsing finished.`);
+            // GDIDisc.debugLog(JSON.stringify([...this.m_tracks], null, 4));
+            GDIDisc.debugLog(util.inspect(this, {depth: null}));
             if (this.m_parseCompleteCB) {
                 this.m_parseCompleteCB(this);
             }
         });
 
         rl.on('line', (input) => {
-            // GDILayout.debugLog(`Received: ${input}`);
+            // GDIDisc.debugLog(`Received: ${input}`);
             this.m_gdiFileLineParser(input);
         });
     }
@@ -295,7 +295,7 @@ export class GDILayout {
     }
 
     private _gdiLineParser_TrackCountLine(lineContent: string): void {
-        GDILayout.debugLog(`IndexLine: ${lineContent}`);
+        GDIDisc.debugLog(`IndexLine: ${lineContent}`);
         let result = parseInt(lineContent);
 
         // Alter to line parser callback
@@ -308,12 +308,12 @@ export class GDILayout {
     }
 
     private _gdiLineParser_TrackContentLine(lineContent: string): void {
-        GDILayout.debugLog(`TrackLine: ${lineContent}`);
+        GDIDisc.debugLog(`TrackLine: ${lineContent}`);
         let arrStr: Array<string> = lineContent.split(/\s+/);
 
         // // Debug log parsed results for this line
         // for (let i=0;i<arrStr.length;i++) {
-        //     GDILayout.debugLog(arrStr[i]);
+        //     GDIDisc.debugLog(arrStr[i]);
         // }
 
         if (this._isValidTrackInfo(arrStr)) {
