@@ -172,6 +172,10 @@ export class GDITrackContent {
         }
     }
 
+    /**
+     * Validate if the track content file exists and the size is valid in logical
+     * @returns {boolean}
+     */
     get isValid(): boolean {
         let retVal: boolean = ((this.m_stats) && (this.m_stats.isFile()) && ((this.m_stats.size % this.m_sectorSize) == 0));
         return retVal;
@@ -216,6 +220,7 @@ export class GDILayout {
     }
 
     protected constructor() {
+        this.m_trackCount = 0;
         this.m_tracks = new Map<number, GDITrack>();
         this.m_gdiFileLineParser = (lineContent: string) => {
             this._gdiLineParser_TrackCountLine(lineContent);
