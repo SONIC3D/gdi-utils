@@ -8,19 +8,23 @@
  * Copyright (c) 2017 "SONIC3D <sonic3d@gmail.com>"
  */
 
-export class Debug {
-    public static EnableOutputLog: boolean = false;
-    public static EnableOutputError: boolean = true;
+module dbgUtil {
+    export class Debug {
+        public static EnableOutputLog: boolean = false;
+        public static EnableOutputError: boolean = true;
 
-    public static log(message?: any, ...optionalParams: any[]): void {
-        if (Debug.EnableOutputLog) {
-            console.log(message, ...optionalParams);
+        public static log(message?: any, ...optionalParams: any[]): void {
+            if (Debug.EnableOutputLog) {
+                console.log(message, ...optionalParams);
+            }
         }
-    }
 
-    public static error(message?: any, ...optionalParams: any[]): void {
-        if (Debug.EnableOutputError) {
-            console.error(message, ...optionalParams);
+        public static error(message?: any, ...optionalParams: any[]): void {
+            if (Debug.EnableOutputError) {
+                console.error(message, ...optionalParams);
+            }
         }
     }
 }
+
+export = dbgUtil;
