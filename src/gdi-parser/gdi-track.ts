@@ -104,7 +104,7 @@ module gditrack {
                 // Reading 16 byte from the track head. If it's filled with 0x00, then that's the embedded pre gap data.
                 retVal = true;
                 let buffer: Buffer = Buffer.alloc(16);
-                if (this.content.readByteData(buffer, 0, 16) == 16) {
+                if (this.content.readByteData(buffer, 0, 0, 16) == 16) {
                     GDITrack.debugLog(buffer.toString('hex'));
                     for (let i = 0; i < buffer.byteLength; i++) {
                         let currByte = buffer.readUInt8(i);
@@ -211,15 +211,16 @@ module gditrack {
 
         /**
          * Read specific length of data in byte into target buffer from the offset relative to the start of the track file
-         * @param buffer
-         * @param offset
-         * @param length
+         * @param targetBuffer
+         * @param targetStart
+         * @param trackFileOffset
+         * @param readLength
          * @returns {number} The actual length of the data that read
          */
-        public readByteData(buffer: Buffer, offset: number, length: number): number {
+        public readByteData(targetBuffer: Buffer, targetStart:number, trackFileOffset: number, readLength: number): number {
             let retVal: number = 0;
             if (this.m_fd) {
-                retVal = fs.readSync(this.m_fd, buffer, offset, length, 0);
+                retVal = fs.readSync(this.m_fd, targetBuffer, targetStart, readLength, trackFileOffset);
             }
             return retVal;
         }
