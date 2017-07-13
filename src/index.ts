@@ -19,7 +19,7 @@ module app {
             // TODO: Program entry logic
             console.log("MainEntry::exec()");
             //let gdiTrack = new GDITrack(123, 4, 2352, "track01.bin", 0);
-            GDIDisc.createFromFile("test.gdi", () => {
+            GDIDisc.createFromFile("test.gdi", (gdiLayout:GDIDisc) => {
                 console.log("GDI file parsing finished.");
 
                 gdiLayout.printInfo();
