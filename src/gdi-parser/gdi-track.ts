@@ -103,7 +103,7 @@ module gditrack {
             if (this.isAudioTrack) {
                 // Reading 16 byte from the track head. If it's filled with 0x00, then that's the embedded pre gap data.
                 retVal = true;
-                let buffer: Buffer = new Buffer(16);
+                let buffer: Buffer = Buffer.alloc(16);
                 if (this.content.readByteData(buffer, 0, 16) == 16) {
                     GDITrack.debugLog(buffer.toString('hex'));
                     for (let i = 0; i < buffer.byteLength; i++) {
