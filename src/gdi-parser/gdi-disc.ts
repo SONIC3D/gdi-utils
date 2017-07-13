@@ -24,12 +24,19 @@ module gdidisc {
         protected m_gdiFileLineParser: (lineContent: string) => void;
         protected m_parseCompleteCB: (gdiLayout: GDIDisc) => void;
 
+        // IP.BIN data read from track 03 sector 0-16. There are 2048(0x800) bytes per sector, so it's 0x8000 in all.
+        protected m_ipbinDataBuf: Buffer;
+
         get trackCount(): number {
             return this.m_trackCount;
         }
 
         get tracks(): Map<number, GDITrack> {
             return this.m_tracks;
+        }
+
+        get ipbinDataBuf(): Buffer {
+            return this.m_ipbinDataBuf;
         }
 
         protected constructor() {
@@ -61,18 +68,41 @@ module gdidisc {
             let rl = readline.createInterface({input: rstream});
 
             rl.on('close', () => {
-                GDIDisc.debugLog(`Info: GDI file parsing finished.`);
-                // GDIDisc.debugLog(JSON.stringify([...this.m_tracks], null, 4));
-                GDIDisc.debugLog(util.inspect(this, {depth: null}));
-                if (this.m_parseCompleteCB) {
-                    this.m_parseCompleteCB(this);
-                }
+                this.onGdiFileParseComplete();
             });
 
             rl.on('line', (input) => {
                 // GDIDisc.debugLog(`Received: ${input}`);
                 this.m_gdiFileLineParser(input);
             });
+        }
+
+        protected onGdiFileParseComplete(): void {
+            // load ip.bin data from Track 03 for accurate track data
+            this.initIpBinDataBuf();
+
+            GDIDisc.debugLog(`Info: GDI file parsing finished.`);
+            // GDIDisc.debugLog(JSON.stringify([...this.m_tracks], null, 4));
+            GDIDisc.debugLog(util.inspect(this, {depth: null}));
+
+            // inform upper logic level that gdi has been fully parsed and loaded.
+            if (this.m_parseCompleteCB) {
+                this.m_parseCompleteCB(this);
+            }
+        }
+
+        protected initIpBinDataBuf(): void {
+            this.m_ipbinDataBuf = Buffer.alloc(0x8000, 0x00);
+            if (this.tracks.has(3)) {
+                let track3 = this.tracks.get(3);
+                let partBuf: Buffer = Buffer.alloc(0x800);  // allocate 2048 bytes for user data in each sector
+                // loop 16 sectors in all
+                for (let i = 0; i < 0x10; i++) {
+                    // Skip 16 byte sync data and read 2048 user data from raw sector. Then copy it to the whole buffer
+                    track3.content.readByteData(partBuf, 0, i * track3.sectorSize + 0x10, 0x800);
+                    partBuf.copy(this.m_ipbinDataBuf, i * 0x800);
+                }
+            }
         }
 
         public unload(): void {
@@ -154,6 +184,16 @@ module gdidisc {
                         console.log("<Empty track>");
                     }
                 }
+            }
+        }
+
+        public printIpBinInfo(): void {
+            console.log("IP.BIN content:");
+            let lenLines: number = this.m_ipbinDataBuf.length / 16;
+            for (let i = 0; i < lenLines; i++) {
+                let start = i * 0x10;
+                let end = start + 0x10;
+                console.log(`${this.m_ipbinDataBuf.toString('hex', start, end)}`);
             }
         }
     }

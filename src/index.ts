@@ -23,6 +23,7 @@ module app {
                 console.log("GDI file parsing finished.");
 
                 gdiLayout.printInfo();
+                gdiLayout.printIpBinInfo();
                 gdiLayout.unload();
             });
         }
