@@ -13,6 +13,7 @@ import * as readline from 'readline';
 import * as util from 'util';
 import { Debug } from './dbg-util';
 import { GDITrack } from './gdi-track';
+import { InitialProgram } from './gdi-ipbin';
 
 module gdidisc {
     export class GDIDisc {
@@ -25,7 +26,7 @@ module gdidisc {
         protected m_parseCompleteCB: (gdiLayout: GDIDisc) => void;
 
         // IP.BIN data read from track 03 sector 0-16. There are 2048(0x800) bytes per sector, so it's 0x8000 in all.
-        protected m_ipbinDataBuf: Buffer;
+        protected m_ipBin: InitialProgram;
 
         get trackCount(): number {
             return this.m_trackCount;
@@ -35,8 +36,8 @@ module gdidisc {
             return this.m_tracks;
         }
 
-        get ipbinDataBuf(): Buffer {
-            return this.m_ipbinDataBuf;
+        get ipBin(): InitialProgram {
+            return this.m_ipBin;
         }
 
         protected constructor() {
@@ -79,7 +80,7 @@ module gdidisc {
 
         protected onGdiFileParseComplete(): void {
             // load ip.bin data from Track 03 for accurate track data
-            this.initIpBinDataBuf();
+            this.initIpBin();
 
             GDIDisc.debugLog(`Info: GDI file parsing finished.`);
             // GDIDisc.debugLog(JSON.stringify([...this.m_tracks], null, 4));
@@ -91,16 +92,17 @@ module gdidisc {
             }
         }
 
-        protected initIpBinDataBuf(): void {
-            this.m_ipbinDataBuf = Buffer.alloc(0x8000, 0x00);
+        protected initIpBin(): void {
+            let _ipbinDataBuf: Buffer = Buffer.alloc(0x8000, 0x00);
             if (this.tracks.has(3)) {
                 let track3 = this.tracks.get(3);
                 // loop 16 sectors in all
                 for (let i = 0; i < 0x10; i++) {
                     // Skip 16 byte sync data and read 2048 user data from raw sector.
-                    track3.content.readByteData(this.m_ipbinDataBuf, i * 0x800, i * track3.sectorSize + 0x10, 0x800);
+                    track3.content.readByteData(_ipbinDataBuf, i * 0x800, i * track3.sectorSize + 0x10, 0x800);
                 }
             }
+            this.m_ipBin = InitialProgram.createFromBuffer(_ipbinDataBuf);
         }
 
         public unload(): void {
@@ -186,13 +188,8 @@ module gdidisc {
         }
 
         public printIpBinInfo(): void {
-            console.log("IP.BIN content:");
-            let lenLines: number = this.m_ipbinDataBuf.length / 16;
-            for (let i = 0; i < lenLines; i++) {
-                let start = i * 0x10;
-                let end = start + 0x10;
-                console.log(`${this.m_ipbinDataBuf.toString('hex', start, end)}`);
-            }
+            if (this.m_ipBin)
+                this.m_ipBin.printInfo();
         }
     }
 }
