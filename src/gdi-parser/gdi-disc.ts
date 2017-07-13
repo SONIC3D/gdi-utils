@@ -163,6 +163,11 @@ module gdidisc {
             return retVal;
         }
 
+        public readSectorRAW(startLBA: number): Buffer {
+            // TODO: Read sector data by using LBA relative to the whole GD-ROM
+            return Buffer.alloc(16);
+        }
+
         public printInfo(): void {
             if (this.trackCount > 0) {
                 for (let [currTrkIdx, currTrack] of this.tracks) {
