@@ -95,12 +95,10 @@ module gdidisc {
             this.m_ipbinDataBuf = Buffer.alloc(0x8000, 0x00);
             if (this.tracks.has(3)) {
                 let track3 = this.tracks.get(3);
-                let partBuf: Buffer = Buffer.alloc(0x800);  // allocate 2048 bytes for user data in each sector
                 // loop 16 sectors in all
                 for (let i = 0; i < 0x10; i++) {
-                    // Skip 16 byte sync data and read 2048 user data from raw sector. Then copy it to the whole buffer
-                    track3.content.readByteData(partBuf, 0, i * track3.sectorSize + 0x10, 0x800);
-                    partBuf.copy(this.m_ipbinDataBuf, i * 0x800);
+                    // Skip 16 byte sync data and read 2048 user data from raw sector.
+                    track3.content.readByteData(this.m_ipbinDataBuf, i * 0x800, i * track3.sectorSize + 0x10, 0x800);
                 }
             }
         }
