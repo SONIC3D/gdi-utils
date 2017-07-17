@@ -134,6 +134,21 @@ module gditrack {
             }
             return retVal;
         }
+
+        public readSectorRAW(startLBA: number, lenOfSectorsToRead: number = 1, maxReadBufferSize: number = this.sectorSize * 1024): Buffer {
+            let retVal: Buffer;
+            let normalizedStartLBA = startLBA;
+            // Add 150 sectors for redump format audio track data
+            if (this.isPreGapDataEmbedded) {
+                normalizedStartLBA += 150;
+            }
+            let readLen = this.sectorSize;
+            let buf: Buffer = Buffer.alloc(readLen);
+            if (this.content.readByteData(buf, 0, normalizedStartLBA * this.sectorSize, readLen) == readLen) {
+                retVal = buf;
+            }
+            return retVal;
+        }
     }
 
     export class GDITrackContent {
