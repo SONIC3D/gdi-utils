@@ -165,13 +165,80 @@ module gditrack {
             return retVal;
         }
 
-        public readSectorRAW(startLBA: number, lenOfSectorsToRead: number = 1, maxReadBufferSize: number = this.sectorSize * 1024): Buffer {
-            let retVal: Buffer;
-            let normalizedStartLBA = startLBA;
+        /**
+         * Get the correct Disc LBA of PreGap data of this track. No matter the track is in Redump format or Trurip/Tosec format.
+         * @returns {number}
+         */
+        get normalizedStartLBA_PreGap(): number {
+            let retVal: number = this.m_LBA - 150;
             // Add 150 sectors for redump format audio track data
             if (this.isPreGapDataEmbedded) {
-                normalizedStartLBA += 150;
+                retVal += 150;
             }
+            return retVal;
+        }
+
+        /**
+         * Get the correct Disc LBA of actual data / audio data of this track. No matter the track is in Redump format or Trurip/Tosec format.
+         * @returns {number}
+         */
+        get normalizedStartLBA_Data(): number {
+            let retVal: number = this.m_LBA;
+            // Add 150 sectors for redump format audio track data
+            if (this.isPreGapDataEmbedded) {
+                retVal += 150;
+            }
+            return retVal;
+        }
+
+        /**
+         * Convert disc LBA(absolute LBA) to track LBA(LBA relative to the start sector of data/audio data of this track).
+         * (First sector of actual data of current track is 0, and the first sector of pregap data of current track is -150).
+         * @param discLBA
+         * @returns {number}
+         */
+        public discLBAtoTrackLBA(discLBA: number): number {
+            return discLBA - this.normalizedStartLBA_Data;
+        }
+
+        /**
+         * Convert track LBA to disc LBA.
+         * (Reverse process to GDITrack.discLBAtoTrackLBA method.)
+         * @param trackLba
+         * @returns {number}
+         */
+        public trackLBAtoDiscLBA(trackLba: number): number {
+            return trackLba + this.normalizedStartLBA_Data;
+        }
+
+        /**
+         * Get the file offset of specified disc LBA
+         * May return negative value or value large value than the actual length of this track file for disc LBA value out of the range current track.
+         * @param discLBA
+         * @returns {number}
+         */
+        public discLBAtoFileByteOffset(discLBA: number): number {
+            return this.trackLBAtoFileByteOffset(this.discLBAtoTrackLBA(discLBA));
+        }
+
+        /**
+         * Get the file offset of specified track LBA
+         * May return negative value or value large value than the actual length of this track file for disc LBA value out of the range current track.
+         * @param trackLba
+         * @returns {number}
+         */
+        public trackLBAtoFileByteOffset(trackLba: number): number {
+            let retVal: number = trackLba * this.sectorSize;
+            // Add 150 sectors for redump format audio track data
+            if (this.isPreGapDataEmbedded) {
+                retVal += 150 * this.sectorSize;
+            }
+            return retVal;
+        }
+
+        public readSectorRAW(startLBA: number, lenOfSectorsToRead: number = 1, maxReadBufferSize: number = this.sectorSize * 1024): Buffer {
+            let retVal: Buffer;
+            let normalizedStartLBA = this.normalizedStartLBA_Data;
             let readLen = this.sectorSize;
             let buf: Buffer = Buffer.alloc(readLen);
             if (this.content.readByteData(buf, 0, normalizedStartLBA * this.sectorSize, readLen) == readLen) {
