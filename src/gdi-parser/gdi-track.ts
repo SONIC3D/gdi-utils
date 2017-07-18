@@ -64,12 +64,29 @@ module gditrack {
             return this.m_typeId;
         }
 
+        /**
+         * Sector size marked in gdi cue file.
+         * So far it should be 2352 in all cases.
+         * @returns {number}
+         */
         get sectorSize(): number {
             return this.m_sectorSize;
         }
 
+        /**
+         * Check if current track is marked as AUDIO track type in gdi cue file.
+         * @returns {boolean}
+         */
         get isAudioTrack(): boolean {
             return (this.typeId == 0);
+        }
+
+        /**
+         * Check if current track is marked as DATA track type in gdi cue file.
+         * @returns {boolean}
+         */
+        get isDataTrack(): boolean {
+            return (this.typeId == 4);
         }
 
         /**
@@ -79,16 +96,28 @@ module gditrack {
             return (this.isAudioTrack ? 150 : 0);
         }
 
+        /**
+         * PreGap LBA directly based on track LBA value marked in gdi cue file.
+         * This value is not correct to audio tracks of redump format gdi images for there is embedded pregap data in track files.
+         * For correct value, take a look at GDITrack.normalizedStartLBA_PreGap property.
+         * @returns {number}
+         */
         get startLBA_PreGap(): number {
             return this.m_LBA - this.preGapLengthInSector;
         }
 
+        /**
+         * Data / Audio track data LBA directly based on track LBA value marked in gdi cue file.
+         * This value is not correct to audio tracks of redump format gdi images for there is embedded pregap data in track files.
+         * For correct value, take a look at GDITrack.normalizedStartLBA_Data property.
+         * @returns {number}
+         */
         get startLBA_Data(): number {
             return this.m_LBA;
         }
 
         /**
-         * LBA that current track ends on.(It not the 'last' sector of current track, but the start LBA of the next track with PreGap data)
+         * LBA that current track ends on.(not inclusive)
          * @returns {number}
          */
         get endLBA(): number {
