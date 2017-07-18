@@ -164,6 +164,32 @@ module gdidisc {
             return retVal;
         }
 
+        /**
+         * Return the GDITrack object which contains the target sector data.
+         * Note: There is special case in games with audiio tracks and last track is data track type.
+         *       Redump dumps of these games moves first 75 sectors of the last data track to the tail of its previous track.
+         *       In this case, if discLBA in this 75 sectors range is provided, this method will return the previous track as the purpose of this method is to locate which track file the actual sector data is stored from the loaded gdi image.
+         * @param discLBA
+         * @returns {GDITrack}
+         */
+        public getSectorOwnerTrack(discLBA: number): GDITrack {
+            let retVal: GDITrack;
+            // Enumerate tracks in order of track id. Orders do matter in this function!
+            for (let i: number = 1; i <= this.trackCount; i++) {
+                let currTrack = this.tracks.get(i);
+                if (discLBA < currTrack.normalizedStartLBA_Data) {
+                    // The specified discLBA is stay before current track and after the last track.
+                    // Maybe it's in pre gap area of current track.
+                    // Anyway, just return undefined value in this case and skip further compare for tracks after current track.
+                    break;
+                } else if (discLBA < currTrack.endLBA) {
+                    retVal = currTrack;
+                    break;
+                }
+            }
+            return retVal;
+        }
+
         public readSectorRAW(startLBA: number): Buffer {
             // TODO: Read sector data by using LBA relative to the whole GD-ROM
             return Buffer.alloc(16);
