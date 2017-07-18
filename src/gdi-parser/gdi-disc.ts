@@ -11,6 +11,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
 import * as util from 'util';
+import { Buffer } from 'buffer';
 import { Debug } from './dbg-util';
 import { GDITrack } from './gdi-track';
 import { InitialProgram } from './gdi-ipbin';
