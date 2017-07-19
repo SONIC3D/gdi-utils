@@ -9,9 +9,14 @@
  */
 import * as gdidisc from './gdi-disc';
 import * as gditrack from './gdi-track';
+import * as gdiwriter from "./gdi-writer";
 
 export class GDIDisc extends gdidisc.GDIDisc {
 }
 
 export class GDITrack extends gditrack.GDITrack {
+}
+
+export class GeneralGDIWriter extends gdiwriter.GeneralGDIWriter {
+
 }
