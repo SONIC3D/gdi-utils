@@ -28,6 +28,7 @@ module gdidisc {
 
         // IP.BIN data read from track 03 sector 0-16. There are 2048(0x800) bytes per sector, so it's 0x8000 in all.
         protected m_ipBin: InitialProgram;
+        protected m_isIpBinLoaded: boolean;
 
         get trackCount(): number {
             return this.m_trackCount;
@@ -41,12 +42,17 @@ module gdidisc {
             return this.m_ipBin;
         }
 
+        get isIpBinLoaded(): boolean {
+            return this.m_isIpBinLoaded;
+        }
+
         protected constructor() {
             this.m_trackCount = 0;
             this.m_tracks = new Map<number, GDITrack>();
             this.m_gdiFileLineParser = (lineContent: string) => {
                 this._gdiLineParser_TrackCountLine(lineContent);
             };
+            this.m_isIpBinLoaded = false;
         }
 
         public static createFromFile(gdiFilePath: string, parseCompleteCB?: (gdiLayout: GDIDisc) => void): GDIDisc {
@@ -81,7 +87,7 @@ module gdidisc {
 
         protected onGdiFileParseComplete(): void {
             // load ip.bin data from Track 03 for accurate track data
-            this.initIpBin();
+            this.m_isIpBinLoaded = this.initIpBin();
 
             GDIDisc.debugLog(`Info: GDI file parsing finished.`);
             // GDIDisc.debugLog(JSON.stringify([...this.m_tracks], null, 4));
@@ -93,17 +99,22 @@ module gdidisc {
             }
         }
 
-        protected initIpBin(): void {
+        protected initIpBin(): boolean {
+            let retVal: boolean = false;
             let _ipbinDataBuf: Buffer = Buffer.alloc(0x8000, 0x00);
             if (this.tracks.has(3)) {
                 let track3 = this.tracks.get(3);
-                // loop 16 sectors in all
-                for (let i = 0; i < 0x10; i++) {
-                    // Skip 16 byte sync data and read 2048 user data from raw sector.
-                    track3.content.readByteData(_ipbinDataBuf, i * 0x800, i * track3.sectorSize + 0x10, 0x800);
+                if (track3.content.isValid) {
+                    // loop 16 sectors in all
+                    for (let i = 0; i < 0x10; i++) {
+                        // Skip 16 byte sync data and read 2048 user data from raw sector.
+                        track3.content.readByteData(_ipbinDataBuf, i * 0x800, i * track3.sectorSize + 0x10, 0x800);
+                    }
+                    this.m_ipBin = InitialProgram.createFromBuffer(_ipbinDataBuf);
+                    retVal = true;
                 }
             }
-            this.m_ipBin = InitialProgram.createFromBuffer(_ipbinDataBuf);
+            return retVal;
         }
 
         public unload(): void {
