@@ -7,7 +7,7 @@
  *
  * Copyright (c) 2017 "SONIC3D <sonic3d@gmail.com>"
  */
-import { GDITrack, GDIDisc } from "./gdi-parser";
+import { GDITrack, GDIDisc, GeneralGDIWriter } from "./gdi-parser";
 
 module app {
     export class MainEntry {
@@ -25,6 +25,9 @@ module app {
                 gdiLayout.printInfo();
                 gdiLayout.printIpBinInfo();
                 gdiLayout.unload();
+
+                let writer = GeneralGDIWriter.create(gdiLayout, "./");
+                writer.exec();
             });
         }
     }
