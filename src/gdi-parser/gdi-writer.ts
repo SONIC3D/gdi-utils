@@ -97,43 +97,17 @@ module gdiwriter {
             for (let i = 1; i <= 2; i++) {
                 let _currTrack = this.m_gdiDisc.tracks.get(i);
                 if (_currTrack.content.isValid) {
-                    let DEFAULT_COPYING_BUFFER_LENGTH = _currTrack.sectorSize * 10240;  // 20MB file copying buffer as default
-
-                    // Open file for write
-                    let _outTrackFilePath = path.join(this.m_outputDir, this.getOutputTrackFilename(i));
-                    let _outTrackFile_FD = fs.openSync(_outTrackFilePath, 'w');
-
                     let _srcTrackLBAStart = _currTrack.discLBAtoTrackLBA(_currTrack.normalizedStartLBA_Data);
                     let _srcTrackLBAEnd = _currTrack.discLBAtoTrackLBA(_currTrack.endLBA);
                     let _srcTrackFileOffset = _currTrack.discLBAtoFileByteOffset(_currTrack.normalizedStartLBA_Data);
                     let _srcTrackContentByteLength = _currTrack.sectorSize * (_srcTrackLBAEnd - _srcTrackLBAStart);
 
-                    let _readOffsetCurrLoop = _srcTrackFileOffset;
-                    let _writeOffsetCurrLoop = 0;
-                    let _totalByteLenLeft = _srcTrackContentByteLength;
-                    let _cpBufLenCurrLoop = DEFAULT_COPYING_BUFFER_LENGTH;
-                    let _cpBuf: Buffer = Buffer.alloc(_cpBufLenCurrLoop);   // Reallocate buffer for first copying buffer chunk.
-                    while (_totalByteLenLeft > 0) {
-                        if (_cpBufLenCurrLoop != _totalByteLenLeft) {
-                            // Reallocate buffer for last copying buffer chunk(a smaller buffer chunk).
-                            _cpBuf = Buffer.alloc(_totalByteLenLeft);
-                            _cpBufLenCurrLoop = _totalByteLenLeft;
-                        }
-                        // Data read
-                        _currTrack.content.readByteData(_cpBuf, 0, _readOffsetCurrLoop, _cpBufLenCurrLoop);
-                        // Data write
-                        if (_outTrackFile_FD) {
-                            let bytesActuallyWritten: number = fs.writeSync(_outTrackFile_FD, _cpBuf, 0, _cpBufLenCurrLoop, _writeOffsetCurrLoop);
-                            if (bytesActuallyWritten != _cpBufLenCurrLoop) {
-                                console.log(`Track write wrong on track ${i}`);
-                                break;  // break out of the buffer copying loop, directly go to close file procedure
-                            }
-                        }
-                        // Prepare for reading next chunk of data from source track file
-                        _readOffsetCurrLoop += _cpBufLenCurrLoop;
-                        _writeOffsetCurrLoop += _cpBufLenCurrLoop;
-                        _totalByteLenLeft = _srcTrackContentByteLength - _readOffsetCurrLoop;
-                    }
+                    // Open file for write
+                    let _outTrackFilePath = path.join(this.m_outputDir, this.getOutputTrackFilename(i));
+                    let _outTrackFile_FD = fs.openSync(_outTrackFilePath, 'w');
+
+                    this._copyTrackContent(_currTrack, _srcTrackFileOffset, _srcTrackContentByteLength, _outTrackFile_FD, 0);
+
                     // Close file and this is the end of this track
                     fs.closeSync(_outTrackFile_FD);
                 } else {
@@ -145,6 +119,51 @@ module gdiwriter {
 
             // Write tracks in high density area
             // TODO: Write tracks in high density area
+        }
+
+        /**
+         * Write content of source file to the specific offset position of the output file which is specified by a file description.
+         * @param srcTrack
+         * @param srcTrackFileOffset
+         * @param srcTrackContentByteLength
+         * @param outFileFD
+         * @param outTrackFileWriteStartOffset Write offset in output file, usually it's zero for newly created track file. But if the output file is filled by multiple source file content, then this would be meaningful.
+         * @returns {number} The actual bytes written in total in this routing.
+         * @private
+         */
+        private _copyTrackContent(srcTrack: GDITrack, srcTrackFileOffset: number, srcTrackContentByteLength: number, outFileFD: number, outTrackFileWriteStartOffset: number): number {
+            let DEFAULT_COPYING_BUFFER_LENGTH = srcTrack.sectorSize * 10240;  // 20MB file copying buffer as default
+
+            let _readOffsetCurrLoop = srcTrackFileOffset;
+            let _writeOffsetCurrLoop = outTrackFileWriteStartOffset;
+            let _totalByteLenLeft = srcTrackContentByteLength;
+            let _cpBufLenCurrLoop = DEFAULT_COPYING_BUFFER_LENGTH;
+            let _cpBuf: Buffer = Buffer.alloc(_cpBufLenCurrLoop);   // Reallocate buffer for first copying buffer chunk.
+            let _totalBytesWritten: number = 0;
+            while (_totalByteLenLeft > 0) {
+                if (_cpBufLenCurrLoop != _totalByteLenLeft) {
+                    // Reallocate buffer for last copying buffer chunk(a smaller buffer chunk).
+                    _cpBuf = Buffer.alloc(_totalByteLenLeft);
+                    _cpBufLenCurrLoop = _totalByteLenLeft;
+                }
+                // Data read
+                srcTrack.content.readByteData(_cpBuf, 0, _readOffsetCurrLoop, _cpBufLenCurrLoop);
+                // Data write
+                if (outFileFD) {
+                    let bytesActuallyWritten: number = fs.writeSync(outFileFD, _cpBuf, 0, _cpBufLenCurrLoop, _writeOffsetCurrLoop);
+                    if (bytesActuallyWritten != _cpBufLenCurrLoop) {
+                        console.log(`Track write wrong on track ${srcTrack.trackId}`);
+                        break;  // break out of the buffer copying loop, directly go to close file procedure
+                    }
+                }
+                // Prepare for reading next chunk of data from source track file
+                _readOffsetCurrLoop += _cpBufLenCurrLoop;
+                _writeOffsetCurrLoop += _cpBufLenCurrLoop;
+                _totalByteLenLeft = srcTrackContentByteLength - _readOffsetCurrLoop;
+                _totalBytesWritten += _cpBufLenCurrLoop;
+            }
+
+            return _totalBytesWritten;
         }
     }
 }
