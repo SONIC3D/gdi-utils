@@ -59,7 +59,19 @@ console.log("Program started!");
 let args:string[] = process.argv.slice(2);
 console.log('Commandline arguments: ', args);
 if (args.length != 3) {
-    // TODO: print help
+    console.log("GDI Utilities 1.00");
+    console.log("Written by SONIC3D, Jul.2017");
+    console.log("This tool is for converting any GDI image to General GDI format or Redump GDI format.");
+    console.log("====================");
+    console.log("Usage:");
+    console.log("  gdi-utils <input gdi filepath> <output mode> <output dir>");
+    console.log("    output mode:       0 for General GDI Format and 1 for Redump GDI Format");
+    console.log("");
+    console.log("Sample usage:");
+    console.log("  gdi-utils ./input.gdi 0 ./");
+    console.log("  gdi-utils \"C:\\mygames\\input.gdi\" 0 \"D:\\Output\"");
+    console.log("====================");
+    console.log("");
 } else {
     let inputGdiFile: string = args[0];
     let outputMode: number = parseInt(args[1]);
