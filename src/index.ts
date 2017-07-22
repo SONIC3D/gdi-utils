@@ -45,10 +45,11 @@ module app {
 
                 gdiLayout.printInfo();
                 gdiLayout.printIpBinInfo();
+                if (gdiLayout.isIpBinLoaded) {
+                    let writer = GeneralGDIWriter.create(gdiLayout, this.m_outputDir);
+                    writer.exec();
+                }
                 gdiLayout.unload();
-
-                let writer = GeneralGDIWriter.create(gdiLayout, this.m_outputDir);
-                writer.exec();
             });
         }
     }
