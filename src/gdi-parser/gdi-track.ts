@@ -121,7 +121,13 @@ module gditrack {
          * @returns {number}
          */
         get endLBA(): number {
-            return this.startLBA_Data + this.m_content.lengthInSector;
+            let trackLengthInSector: number = 0;
+            if (this.content.isValid) {
+                trackLengthInSector = this.content.lengthInSector;
+            } else {
+                console.log("Failed to read data from track! Track length is set to zero.");
+            }
+            return this.startLBA_Data + trackLengthInSector;
         }
 
         /**
@@ -130,7 +136,7 @@ module gditrack {
          */
         get isPreGapDataEmbedded(): boolean {
             let retVal = false;
-            if (this.isAudioTrack) {
+            if ((this.isAudioTrack) && (this.content.isValid)) {
                 // Reading 16 byte from the track head. If it's filled with 0x00, then that's the embedded pre gap data.
                 retVal = true;
                 let buffer: Buffer = Buffer.alloc(16);
@@ -145,6 +151,7 @@ module gditrack {
                     }
                 } else {
                     Debug.error("GDITrack.isPreGapDataEmbedded Error: Failed to read data from track!");
+                    console.log("Failed to read data from track! Assume it's not a redump gdi track.");
                 }
             }
             return retVal;
