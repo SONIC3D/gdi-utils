@@ -253,6 +253,23 @@ module gditrack {
             }
             return retVal;
         }
+
+        public printInfo(): void {
+            let _valid = this.content.isValid;
+            console.log(`Valid:                             ${_valid ? "valid" : "invalid"}`);
+            if (_valid) {
+                console.log(`Size(Byte):                        ${this.content.lengthInByte}`);
+                console.log(`Size(Sector):                      ${this.content.lengthInSector}`);
+                console.log(`PreGap length:                     ${this.preGapLengthInSector}`);
+                console.log(`Start LBA(PreGap):                 ${this.startLBA_PreGap}`);
+                console.log(`Start LBA(Data):                   ${this.startLBA_Data}`);
+                console.log(`Normalized Start LBA(PreGap):      ${this.normalizedStartLBA_PreGap}`);
+                console.log(`Normalized Start LBA(Data):        ${this.normalizedStartLBA_Data}`);
+                console.log(`End LBA:                           ${this.endLBA}`);
+                console.log(`PreGap data embedded:              ${this.isPreGapDataEmbedded}`);
+                console.log(`Overlapped with previous track:    ${this.isOverlappedWithPreviousTrack}`);
+            }
+        }
     }
 
     export class GDITrackContent {
