@@ -106,7 +106,7 @@ module gdiwriter {
 
                     let _readOffsetCurrLoop = _srcTrackFileOffset;
                     let _writeOffsetCurrLoop = 0;
-                    let _totalByteLenLeft = _srcTrackContentByteLength - _readOffsetCurrLoop;
+                    let _totalByteLenLeft = _srcTrackContentByteLength;
                     let _cpBufLenCurrLoop = DEFAULT_COPYING_BUFFER_LENGTH;
                     let _cpBuf: Buffer = Buffer.alloc(_cpBufLenCurrLoop);   // Reallocate buffer for first copying buffer chunk.
                     while (_totalByteLenLeft > 0) {
@@ -128,13 +128,16 @@ module gdiwriter {
                         // Prepare for reading next chunk of data from source track file
                         _readOffsetCurrLoop += _cpBufLenCurrLoop;
                         _writeOffsetCurrLoop += _cpBufLenCurrLoop;
+                        _totalByteLenLeft = _srcTrackContentByteLength - _readOffsetCurrLoop;
                     }
                     // Close file and this is the end of this track
                     fs.closeSync(_outTrackFile_FD);
                 } else {
                     console.log(`Invalid source track found when trying to write output track, track ${i} is skipped...`);
                 }
+                console.log(`Track ${i} is finished copying.`);
             }
+            console.log(`Low density area is finished copying.`);
 
             // Write tracks in high density area
             // TODO: Write tracks in high density area
