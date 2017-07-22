@@ -81,6 +81,10 @@ module gdiwriter {
                         let _sectorSize = _currTrk.sectorSize;
                         let _filename: string = this.getOutputTrackFilename(_trkId);
                         let _unknown = 0;
+                        // Fix the case that the loaded disc is dumped in redump format and the last track is data track.
+                        if ((i == _cntTrks) && (_currTrk.isDataTrack) && (this.m_gdiDisc.isRedumpFormatDetected)) {
+                            _startLBA = _startLBA + 75 + 150;
+                        }
                         _gdiFileStream.write(`${_trkId} ${_startLBA} ${_typeId} ${_sectorSize} ${_filename} ${_unknown}\n`);
                     }
                 }

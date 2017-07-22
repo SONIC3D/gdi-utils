@@ -38,6 +38,19 @@ module gdidisc {
             return this.m_tracks;
         }
 
+        get isRedumpFormatDetected(): boolean {
+            let retVal: boolean = false;
+            let _cntTrks = this.trackCount;
+            for (let i: number = 1; i <= _cntTrks; i++) {
+                let _currTrk: GDITrack = this.tracks.get(i);
+                if (_currTrk.isPreGapDataEmbedded) {
+                    retVal = true;
+                    break;
+                }
+            }
+            return retVal;
+        }
+
         get ipBin(): InitialProgram {
             return this.m_ipBin;
         }
