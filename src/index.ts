@@ -24,7 +24,7 @@ module app {
         protected m_outputMode: number;
 
         constructor() {
-            console.log("MainEntry created!");
+            // console.log("MainEntry created!");
         }
 
         public init(inputGdi: string, outputMode: number, outputDir: string): boolean {
@@ -39,8 +39,7 @@ module app {
         }
 
         public exec(): void {
-            // TODO: Program entry logic
-            console.log("MainEntry::exec()");
+            // console.log("MainEntry::exec()");
             GDIDisc.createFromFile(this.m_inputGdi, (gdiLayout: GDIDisc) => {
                 console.log("GDI file parsing finished.");
 
@@ -58,7 +57,7 @@ module app {
     }
 }
 
-console.log("Program started!");
+// console.log("Program started!");
 let args:string[] = process.argv.slice(2);
 console.log('Commandline arguments: ', args);
 if (args.length != 3) {
@@ -84,4 +83,4 @@ if (args.length != 3) {
         instance.exec();
     }
 }
-console.log("Program exit!");
+// console.log("Program exit!");
