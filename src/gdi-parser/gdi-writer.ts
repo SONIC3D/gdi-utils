@@ -131,7 +131,57 @@ module gdiwriter {
             console.log(`Low density area is finished copying.`);
 
             // Write tracks in high density area
-            // TODO: Write tracks in high density area
+            let _cntTrks = this.m_gdiDisc.trackCount;
+            for (let i = 3; i <= _cntTrks; i++) {
+                let _currTrack = this.m_gdiDisc.tracks.get(i);
+                if (_currTrack.content.isValid) {
+                    // Open file for write
+                    let _outTrackFilePath = path.join(this.m_outputDir, this.getOutputTrackFilename(i));
+                    let _outTrackFile_FD = fs.openSync(_outTrackFilePath, 'w');
+
+                    if (this.isTrackNeedLastDataTrackFix(i)) {
+                        // Fix for redump format gdi image with data track after audio tracks. The last track should start from sector 225(75 sectors belongs to the previous track and 150 sectors are PreGap data).
+                        let _srcTrackLBAStart = _currTrack.discLBAtoTrackLBA(_currTrack.normalizedStartLBA_Data + 75 + 150);
+                        let _srcTrackLBAEnd = _currTrack.discLBAtoTrackLBA(_currTrack.endLBA);
+                        let _srcTrackFileOffset = _currTrack.discLBAtoFileByteOffset(_currTrack.normalizedStartLBA_Data + 75 + 150);
+                        let _srcTrackContentByteLength = _currTrack.sectorSize * (_srcTrackLBAEnd - _srcTrackLBAStart);
+                        this._copyTrackContent(_currTrack, _srcTrackFileOffset, _srcTrackContentByteLength, _outTrackFile_FD, 0);
+                    } else if ((i == _cntTrks - 1) && (this.isTrackNeedLastDataTrackFix(i + 1))) {
+                        // Fix for redump format gdi image with data track after audio tracks. Copy 75 sectors from the last data track to the tail of last audio track.
+                        let _arrSrcTrack: Array<GDITrack> = [];
+                        let _arrSrcTrackFileOffset: Array<number> = [];
+                        let _arrSrcTrackContentByteLength: Array<number> = [];
+
+                        let _srcTrackLBAStart = _currTrack.discLBAtoTrackLBA(_currTrack.normalizedStartLBA_Data);
+                        let _srcTrackLBAEnd = _currTrack.discLBAtoTrackLBA(_currTrack.endLBA);
+                        let _srcTrackFileOffset = _currTrack.discLBAtoFileByteOffset(_currTrack.normalizedStartLBA_Data);
+                        let _srcTrackContentByteLength = _currTrack.sectorSize * (_srcTrackLBAEnd - _srcTrackLBAStart);
+                        _arrSrcTrack.push(_currTrack);
+                        _arrSrcTrackFileOffset.push(_srcTrackFileOffset);
+                        _arrSrcTrackContentByteLength.push(_srcTrackContentByteLength);
+
+                        let _nextTrack = this.m_gdiDisc.tracks.get(i + 1);
+                        if (_nextTrack.content.isValid) {
+                            _arrSrcTrack.push(_nextTrack);
+                            _arrSrcTrackFileOffset.push(0);
+                            _arrSrcTrackContentByteLength.push(_currTrack.sectorSize * 75);
+                        }
+                        this._copyMultiTracksContent(_arrSrcTrack, _arrSrcTrackFileOffset, _arrSrcTrackContentByteLength, _outTrackFile_FD, 0);
+                    } else {
+                        let _srcTrackLBAStart = _currTrack.discLBAtoTrackLBA(_currTrack.normalizedStartLBA_Data);
+                        let _srcTrackLBAEnd = _currTrack.discLBAtoTrackLBA(_currTrack.endLBA);
+                        let _srcTrackFileOffset = _currTrack.discLBAtoFileByteOffset(_currTrack.normalizedStartLBA_Data);
+                        let _srcTrackContentByteLength = _currTrack.sectorSize * (_srcTrackLBAEnd - _srcTrackLBAStart);
+                        this._copyTrackContent(_currTrack, _srcTrackFileOffset, _srcTrackContentByteLength, _outTrackFile_FD, 0);
+                    }
+                    // Close file and this is the end of this track
+                    fs.closeSync(_outTrackFile_FD);
+                } else {
+                    console.log(`Invalid source track found when trying to write output track, track ${i} is skipped...`);
+                }
+                console.log(`Track ${i} is finished copying.`);
+            }
+            console.log(`High density area is finished copying.`);
         }
 
         /**
@@ -176,6 +226,18 @@ module gdiwriter {
                 _totalBytesWritten += _cpBufLenCurrLoop;
             }
 
+            return _totalBytesWritten;
+        }
+
+        // Dealing with the case of concating multiple tracks content to target track data
+        private _copyMultiTracksContent(arrSrcTrack: Array<GDITrack>, arrSrcTrackFileOffset: Array<number>, arrSrcTrackContentByteLength: Array<number>, outFileFD: number, outTrackFileWriteStartOffset: number): number {
+            let _totalBytesWritten: number = 0;
+            let _cnt = arrSrcTrack.length;
+            for (let i = 0; i < _cnt; i++) {
+                let bytesWritten = this._copyTrackContent(arrSrcTrack[i], arrSrcTrackFileOffset[i], arrSrcTrackContentByteLength[i], outFileFD, outTrackFileWriteStartOffset);
+                outTrackFileWriteStartOffset += bytesWritten;
+                _totalBytesWritten += bytesWritten;
+            }
             return _totalBytesWritten;
         }
     }
