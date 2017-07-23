@@ -8,6 +8,7 @@
  * Copyright (c) 2017 "SONIC3D <sonic3d@gmail.com>"
  */
 import { GDITrack, GDIDisc, GeneralGDIWriter } from "./gdi-parser";
+import * as ascli from "ascli";
 
 module app {
     export class MainEntry {
@@ -58,12 +59,17 @@ module app {
 }
 
 // console.log("Program started!");
+let cli = (ascli as any)("GDI Utils");
+cli.banner((ascli as any).appName);
+
+console.log("GDI Utilities 1.00");
+console.log("Written by SONIC3D, Jul.2017");
+console.log("This tool is for converting any GDI image to General GDI format or Redump GDI format.");
+console.log("");
+
 let args:string[] = process.argv.slice(2);
-console.log('Commandline arguments: ', args);
+// console.log('Commandline arguments: ', args);
 if (args.length != 3) {
-    console.log("GDI Utilities 1.00");
-    console.log("Written by SONIC3D, Jul.2017");
-    console.log("This tool is for converting any GDI image to General GDI format or Redump GDI format.");
     console.log("====================");
     console.log("Usage:");
     console.log("  gdi-utils <input gdi filepath> <output mode> <output dir>");
