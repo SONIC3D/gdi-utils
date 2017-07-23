@@ -9,26 +9,26 @@ This converter convert Sega Dreamcast GDI image released in redump.org format to
 
 ## Technical Detail
 ### Terminology
-* General GDI format represents gdi imaged dumped with httpd-ack.
-* Redump.org GDI represent GDI image set dumped and released by redump.org.
+* General GDI format represents gdi image set dumped with httpd-ack. PreGap data is striped.
+* Redump.org GDI represent GDI image set dumped and released by redump.org. PreGap data is embedded in track file. That's 150 sectors(2 seconds) for audio track, 225 sectors(3 seconds) for the last split data track.
 
 ### Detail
-Redump.org GDI and General GDI shares with the same file extention name ".gdi". That's a file similiar but simpler than ".cue" file widely used in CD-ROM image to identify track filenames and track location in the whole disc layout.
+Redump.org GDI and General GDI share with the same file extention name ".gdi". That's a file similiar but simpler than ".cue" file widely used in CD-ROM image to identify track filenames and track location in a whole disc layout.
 
 But redump.org gdi image has several difference compare to the general gdi format.
-* Indent white space in ".gdi" file.
-* PreGap data are embedded in audio track file.
-* The last data track of games with split data track(more than 4 tracks and last data track is after another audio track) contains 75 sectors of data from the tail of its previous audio track and 150 sectors of Pregap. 
-* Different track start LBA value caused by the above 2 differences.
+* Indentation white space in ".gdi" file.
+* PreGap data is embedded in audio track file.
+* For games with split data track(more than 4 tracks and last data track is after another audio track), the last data track contains 75 sectors of data from the tail of its previous audio track and 150 sectors of PreGap. 
+* Different track start LBA values caused by the above 2 differences.
   
 ### Manual conversion guide
 * For game with only 3 tracks:
 
-    Remove the heading 150 sectors from track 2 in low density area and plus 150 of its track LBA in ".gdi" file.
+    Remove the heading 150 sectors from track 2 in low density area and add 150 to its track LBA value in ".gdi" file.
     
-* For game with more than 3 tracks but the last track is an audio track:
+* For game with more than 3 tracks and the last track is an audio track:
 
-    Remove the heading 150 sectors from all audio track and plus 150 of its track LBA in ".gdi" file.
+    Remove the heading 150 sectors from all audio track and add 150 of its track LBA value in ".gdi" file.
     
 * For game with more than 3 tracks and the last track is a data track:
 
