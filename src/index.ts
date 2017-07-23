@@ -29,6 +29,7 @@ module app {
 
         public init(inputGdi: string, outputMode: number, outputDir: string): boolean {
             if (outputMode != 0) {  // 0 for general gdi writer, 1 for redump gdi writer
+                console.log("Only general gdi writer is supported in current version.");
                 return false;
             }
             this.m_inputGdi = inputGdi;
@@ -65,7 +66,7 @@ if (args.length != 3) {
     console.log("====================");
     console.log("Usage:");
     console.log("  gdi-utils <input gdi filepath> <output mode> <output dir>");
-    console.log("    output mode:       0 for General GDI Format and 1 for Redump GDI Format");
+    console.log("    output mode:       0 for General GDI Format and 1 for Redump GDI Format(Not supported yet)");
     console.log("");
     console.log("Sample usage:");
     console.log("  gdi-utils ./input.gdi 0 ./");
