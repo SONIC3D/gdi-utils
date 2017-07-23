@@ -256,9 +256,10 @@ module gdidisc {
                     if (currTrack) {
                         currTrack.printInfo();
                     } else {
-                        console.log("<Empty track>");
+                        console.log("[Empty track]");
                     }
                 }
+                console.log(`========== End of Track Info ==========`);
             }
         }
 

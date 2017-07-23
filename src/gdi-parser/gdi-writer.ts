@@ -137,7 +137,7 @@ module gdiwriter {
                 }
                 console.log(`Track ${i} is finished copying.`);
             }
-            console.log(`Low density area is finished copying.`);
+            console.log(`>>> Low density area is finished copying. <<<`);
 
             // Write tracks in high density area
             let _cntTrks = this.m_gdiDisc.trackCount;
@@ -190,7 +190,7 @@ module gdiwriter {
                 }
                 console.log(`Track ${i} is finished copying.`);
             }
-            console.log(`High density area is finished copying.`);
+            console.log(`>>> High density area is finished copying! <<<`);
         }
 
         /**
