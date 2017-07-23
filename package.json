@@ -13,7 +13,7 @@
   "author": "SONIC3D",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^7.0.18",
+    "@types/node": "^6.0.85",
     "ascli": "^1.0.1",
     "browser-sync": "^2.14.0",
     "glob": "^7.0.6",
