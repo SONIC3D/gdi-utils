@@ -25,7 +25,7 @@ module gdiipbin {
 
         public constructor() {
             this.m_contentBuf = Buffer.alloc(0x8000, 0x0);
-            this.m_refTrackList = new Array<RefTrackInfo>();
+            this.m_refTrackList = [];
         }
 
         public initFromBuffer(dataBuf: Buffer): void {
@@ -52,7 +52,7 @@ module gdiipbin {
                     this.m_refTrackList.push(new RefTrackInfo(startLBA - 150, typeId));
                     cntValidTracks++;
                 } else {
-                    // Break for any invalid reference track record found(usuallly that's 0xFFFFFFFF)
+                    // Break for any invalid reference track record found(usually that's 0xFFFFFFFF)
                     break;
                 }
             }
