@@ -164,7 +164,7 @@ module gdidisc {
             // Redump gdi image with more than 10 tracks would add white space ahead of the line of track 1-9 to create indent.
             // That causes the first delimited item becomes an empty string.
             let arrStr: Array<string> = lineContent.split(/\s+/);
-            if ((arrStr.length > 1) && (arrStr[0].length==0))
+            if ((arrStr.length > 1) && (arrStr[0].length == 0))
                 arrStr = arrStr.slice(1);
 
             // // Debug log parsed results for this line
@@ -182,7 +182,7 @@ module gdidisc {
                     let sectorSize = parseInt(arrStr[3]);
                     if (trackFilename.length == 0)
                         trackFilename = arrStr[4];
-                    let unknown = parseInt(arrStr[arrStr.length-1]);
+                    let unknown = parseInt(arrStr[arrStr.length - 1]);
                     this.m_tracks.set(trackIdx, new GDITrack(this, this.m_gdiFileDir, trackIdx, lba, type, sectorSize, trackFilename, unknown));
                 }
             }
@@ -194,7 +194,7 @@ module gdidisc {
             && (!isNaN(parseInt(arrString[1])) && (parseInt(arrString[1]) >= 0))
             && ((parseInt(arrString[2]) == 0) || (parseInt(arrString[2]) == 4))
             && (parseInt(arrString[3]) == 2352)
-            && (!isNaN(parseInt(arrString[arrString.length-1]))));
+            && (!isNaN(parseInt(arrString[arrString.length - 1]))));
 
             return retVal;
         }
