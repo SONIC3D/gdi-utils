@@ -155,7 +155,12 @@ module gdidisc {
 
         private _gdiLineParser_TrackContentLine(lineContent: string): void {
             GDIDisc.debugLog(`TrackLine: ${lineContent}`);
+
+            // Redump gdi image with more than 10 tracks would add white space ahead of the line of track 1-9 to create indent.
+            // That causes the first delimited item becomes an empty string.
             let arrStr: Array<string> = lineContent.split(/\s+/);
+            if ((arrStr.length > 1) && (arrStr[0].length==0))
+                arrStr = arrStr.slice(1);
 
             // // Debug log parsed results for this line
             // for (let i=0;i<arrStr.length;i++) {
@@ -171,19 +176,19 @@ module gdidisc {
                     let type = parseInt(arrStr[2]);
                     let sectorSize = parseInt(arrStr[3]);
                     let trackFile = arrStr[4];
-                    let unknown = parseInt(arrStr[5]);
+                    let unknown = parseInt(arrStr[arrStr.length-1]);
                     this.m_tracks.set(trackIdx, new GDITrack(this, this.m_gdiFileDir, trackIdx, lba, type, sectorSize, trackFile, unknown));
                 }
             }
         }
 
         private _isValidTrackInfo(arrString: Array<string>): boolean {
-            let retVal: boolean = ((arrString.length == 6)
+            let retVal: boolean = ((arrString.length >= 6)
             && (!isNaN(parseInt(arrString[0])) && (parseInt(arrString[0]) > 0))
             && (!isNaN(parseInt(arrString[1])) && (parseInt(arrString[1]) >= 0))
             && ((parseInt(arrString[2]) == 0) || (parseInt(arrString[2]) == 4))
             && (parseInt(arrString[3]) == 2352)
-            && (!isNaN(parseInt(arrString[5]))));
+            && (!isNaN(parseInt(arrString[arrString.length-1]))));
 
             return retVal;
         }
