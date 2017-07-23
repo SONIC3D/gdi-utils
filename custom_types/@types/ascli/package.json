@@ -1,0 +1,8 @@
+{
+  "name": "ascli",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Daniel Wirtz, ZongJing Lu"
+  },
+  "version": "1.0.1"
+}

@@ -4,6 +4,7 @@
   "description": "Dreamcast GDI disc image utilities project",
   "main": "index.js",
   "scripts": {
+    "postinstall": "cpx \"custom_types/@types/**/*\" node_modules/@types",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p ./tsconfig.json",
     "runnode1": "(export NODE_DEBUG=GDILayout,GDITrack,GDITrackContent || set NODE_DEBUG=GDILayout,GDITrack,GDITrackContent) && node bin/bin-nodejs/index.js \"./test.gdi\" 0 \"./testoutput\"",
@@ -16,6 +17,7 @@
     "@types/node": "^6.0.85",
     "ascli": "^1.0.1",
     "browser-sync": "^2.14.0",
+    "cpx": "^1.5.0",
     "glob": "^7.0.6",
     "glob-array": "^0.1.2",
     "gulp": "^3.9.1",
