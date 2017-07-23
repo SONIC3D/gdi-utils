@@ -36,9 +36,18 @@ module gdiwriter {
         }
 
         public init(gdiDiscObj: GDIDisc, outputDir: string): boolean {
-            let retVal = true;      // TODO: validate if directory exists and gdiDiscObj is valid
-            this.m_gdiDisc = gdiDiscObj;
-            this.m_outputDir = outputDir;
+            // validate if gdiDiscObj is valid and output dir exists
+            let retVal = true;
+            if (!gdiDiscObj.isValid) {
+                console.log("Loaded GDI image is not valid. Failed to initialize general gdi writer.");
+                retVal = false;
+            } else if (!fs.existsSync(outputDir)) {
+                console.log("Output directory does not exist. Failed to initialize general gdi writer.");
+                retVal = false;
+            } else {
+                this.m_gdiDisc = gdiDiscObj;
+                this.m_outputDir = outputDir;
+            }
             return retVal;
         }
 

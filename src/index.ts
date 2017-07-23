@@ -47,8 +47,10 @@ module app {
                 gdiLayout.printInfo();
                 gdiLayout.printIpBinInfo();
                 if (gdiLayout.isIpBinLoaded) {
-                    let writer = GeneralGDIWriter.create(gdiLayout, this.m_outputDir);
-                    writer.exec();
+                    let gdiWriter = GeneralGDIWriter.create(gdiLayout, this.m_outputDir);
+                    if (gdiWriter) {
+                        gdiWriter.exec();
+                    }
                 }
                 gdiLayout.unload();
             });

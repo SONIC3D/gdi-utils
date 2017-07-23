@@ -59,6 +59,25 @@ module gdidisc {
             return this.m_isIpBinLoaded;
         }
 
+        /**
+         * Identify if this is a logical valid gdi image and all track files are able to load.
+         * @returns {boolean}
+         */
+        get isValid(): boolean {
+            let retVal = this.isIpBinLoaded;
+            if (retVal) {
+                let _cntTrks = this.trackCount;
+                for (let i: number = 1; i <= _cntTrks; i++) {
+                    let _currTrk: GDITrack = this.tracks.get(i);
+                    if ((_currTrk) && (!_currTrk.content.isValid)) {
+                        retVal = false;
+                        break;
+                    }
+                }
+            }
+            return retVal;
+        }
+
         protected constructor() {
             this.m_trackCount = 0;
             this.m_tracks = new Map<number, GDITrack>();
