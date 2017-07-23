@@ -44,11 +44,12 @@ But redump.org gdi image has several difference compare to the general gdi forma
 1. Install Node.js runtime environment(6.x LTS version is enough).
 2. Install NPM.
 3. Install Typescript compiler in your OS(`npm install -g typescript`).
-4. Open terminal and enter this project dir.
-5. Run `npm install` to install all required components for compiling.
-6. Run `npm run build` to build this project.
-7. Run `node bin/bin-nodejs/index.js` to see the help 
-8. Run `node bin/bin-nodejs/index.js <your_gdiimage_dir>/input.gdi 0 <output_dir>` to do conversion.
+4. Open terminal and git clone this project(`git clone https://github.com/SONIC3D/gdi-utils.git`).
+5. Change working directory to project root(`cd gdi-utils`). 
+6. Run `npm install` to install all required components for compiling.
+7. Run `npm run build` to build this project.
+8. Run `node bin/bin-nodejs/index.js` to see the help 
+9. Run `node bin/bin-nodejs/index.js <your_gdiimage_dir>/input.gdi 0 <output_dir>` to do conversion.
 
 ## Testing target
 I have tested this tool with games list below.
