@@ -155,6 +155,11 @@ module gdidisc {
 
         private _gdiLineParser_TrackContentLine(lineContent: string): void {
             GDIDisc.debugLog(`TrackLine: ${lineContent}`);
+            let trackFilename = "";
+            // Redump gdi track file with white space in long filename would be quoted.
+            let arrQuoteDelimStr: Array<string> = lineContent.split("\"");
+            if (arrQuoteDelimStr.length > 1)
+                trackFilename = arrQuoteDelimStr[1];
 
             // Redump gdi image with more than 10 tracks would add white space ahead of the line of track 1-9 to create indent.
             // That causes the first delimited item becomes an empty string.
@@ -175,9 +180,10 @@ module gdidisc {
                     let lba = parseInt(arrStr[1]);
                     let type = parseInt(arrStr[2]);
                     let sectorSize = parseInt(arrStr[3]);
-                    let trackFile = arrStr[4];
+                    if (trackFilename.length == 0)
+                        trackFilename = arrStr[4];
                     let unknown = parseInt(arrStr[arrStr.length-1]);
-                    this.m_tracks.set(trackIdx, new GDITrack(this, this.m_gdiFileDir, trackIdx, lba, type, sectorSize, trackFile, unknown));
+                    this.m_tracks.set(trackIdx, new GDITrack(this, this.m_gdiFileDir, trackIdx, lba, type, sectorSize, trackFilename, unknown));
                 }
             }
         }
