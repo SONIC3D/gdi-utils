@@ -82,7 +82,7 @@ module gdiwriter {
                         let _filename: string = this.getOutputTrackFilename(_trkId);
                         let _unknown = 0;
                         // Fix the case that the loaded disc is dumped in redump format and the last track is data track.
-                        if ((i == _cntTrks) && (_currTrk.isDataTrack) && (i > 3) && (this.m_gdiDisc.tracks.get(i - 1).isAudioTrack) && (this.m_gdiDisc.isRedumpFormatDetected)) {
+                        if (this.isTrackNeedLastDataTrackFix(i)) {
                             _startLBA = _startLBA + 75 + 150;
                         }
                         _gdiFileStream.write(`${_trkId} ${_startLBA} ${_typeId} ${_sectorSize} ${_filename} ${_unknown}\n`);
@@ -90,6 +90,19 @@ module gdiwriter {
                 }
                 _gdiFileStream.end();
             }
+        }
+
+        protected isTrackNeedLastDataTrackFix(trackId: number): boolean {
+            let retVal: boolean = false;
+            let _cntTracks = this.m_gdiDisc.trackCount;
+            if (_cntTracks > 3) {
+                let _currTrk: GDITrack = this.m_gdiDisc.tracks.get(trackId);
+                let _prevTrk: GDITrack = this.m_gdiDisc.tracks.get(trackId - 1);
+                if ((trackId == _cntTracks) && (_currTrk.isDataTrack) && (_prevTrk.isAudioTrack) && (this.m_gdiDisc.isRedumpFormatDetected)) {
+                    retVal = true;
+                }
+            }
+            return retVal;
         }
 
         protected writeGdiTrackFiles(): void {
