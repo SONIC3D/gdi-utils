@@ -9,7 +9,7 @@ This converter convert Sega Dreamcast GDI image released in redump.org format to
 
 ## Technical Detail
 ### Terminology
-* General GDI format represents gdi image set dumped with httpd-ack. PreGap data is striped.
+* General GDI format represents gdi image set dumped with httpd-ack and used in Tosec and Trurip dumps. PreGap data is striped.
 * Redump.org GDI represent GDI image set dumped and released by redump.org. PreGap data is embedded in track file. That's 150 sectors(2 seconds) for audio track, 225 sectors(3 seconds) for the last split data track.
 
 ### Detail
