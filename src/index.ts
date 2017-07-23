@@ -45,7 +45,7 @@ module app {
                 console.log("GDI file parsing finished.");
 
                 gdiLayout.printInfo();
-                gdiLayout.printIpBinInfo();
+                // gdiLayout.printIpBinInfo();
                 if (gdiLayout.isIpBinLoaded) {
                     let gdiWriter = GeneralGDIWriter.create(gdiLayout, this.m_outputDir);
                     if (gdiWriter) {
