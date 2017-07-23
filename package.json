@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "buildnode": "tsc -p ./tsconfig.json",
+    "build": "tsc -p ./tsconfig.json",
     "runnode1": "(export NODE_DEBUG=GDILayout,GDITrack,GDITrackContent || set NODE_DEBUG=GDILayout,GDITrack,GDITrackContent) && node bin/bin-nodejs/index.js \"./test.gdi\" 0 \"./testoutput\"",
     "runnode_debug": "node %NODE_DEBUG_OPTION% bin/bin-nodejs/index.js",
     "buildweb": "tsc -p ./tsconfig.web.json"
