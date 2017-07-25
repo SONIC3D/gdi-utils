@@ -176,7 +176,29 @@ module gdiwriter {
                             _arrSrcTrackContentByteLength.push(_currTrack.sectorSize * 75);
                         }
                         this._copyMultiTracksContent(_arrSrcTrack, _arrSrcTrackFileOffset, _arrSrcTrackContentByteLength, _outTrackFile_FD, 0);
+                    } else if ((i > 3) && (this.m_gdiDisc.isRedumpFormatDetected)) {
+                        // General gdi format concat the 150 sectors pregap data of the next track to the end of current track, so for Redump format input gdi there is additional data should be read from the next track.
+                        let _arrSrcTrack: Array<GDITrack> = [];
+                        let _arrSrcTrackFileOffset: Array<number> = [];
+                        let _arrSrcTrackContentByteLength: Array<number> = [];
+
+                        let _srcTrackLBAStart = _currTrack.discLBAtoTrackLBA(_currTrack.normalizedStartLBA_Data);
+                        let _srcTrackLBAEnd = _currTrack.discLBAtoTrackLBA(_currTrack.endLBA);
+                        let _srcTrackFileOffset = _currTrack.discLBAtoFileByteOffset(_currTrack.normalizedStartLBA_Data);
+                        let _srcTrackContentByteLength = _currTrack.sectorSize * (_srcTrackLBAEnd - _srcTrackLBAStart);
+                        _arrSrcTrack.push(_currTrack);
+                        _arrSrcTrackFileOffset.push(_srcTrackFileOffset);
+                        _arrSrcTrackContentByteLength.push(_srcTrackContentByteLength);
+
+                        let _nextTrack = this.m_gdiDisc.tracks.get(i + 1);
+                        if (_nextTrack.content.isValid) {
+                            _arrSrcTrack.push(_nextTrack);
+                            _arrSrcTrackFileOffset.push(0);
+                            _arrSrcTrackContentByteLength.push(_currTrack.sectorSize * 150);
+                        }
+                        this._copyMultiTracksContent(_arrSrcTrack, _arrSrcTrackFileOffset, _arrSrcTrackContentByteLength, _outTrackFile_FD, 0);
                     } else {
+                        // For track [3] of redump format gdi input file, or track [3 to N] of general format gdi input file
                         let _srcTrackLBAStart = _currTrack.discLBAtoTrackLBA(_currTrack.normalizedStartLBA_Data);
                         let _srcTrackLBAEnd = _currTrack.discLBAtoTrackLBA(_currTrack.endLBA);
                         let _srcTrackFileOffset = _currTrack.discLBAtoFileByteOffset(_currTrack.normalizedStartLBA_Data);
