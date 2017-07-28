@@ -1,0 +1,47 @@
+GdRomDisc
+{
+    Lead_In_0:{}
+    Program_Area:Array<GdRomTrack>
+    Lead_Out_0:{}
+}
+
+GdRomTrack
+{
+    TNO
+    Type:number
+    Index:Array<GdRomTrack_Index>(2)
+}
+
+GdRomTrack_Index
+{
+    FAD:number,
+    Length:number,
+    DataSources:Array<>
+}
+
+===================================
+GdiSourceImage {
+    GdiContentFormat: EnumGdiContentFormat,
+    HDAreaPattern: number,
+    TrackCount: number,
+    Tracks: Array<GdiSourceTrack>
+}
+
+EnumGdiContentFormat {
+    Fmt_General,
+    Fmt_Redump
+}
+
+GdiSourceTrack {
+    TrackId: number
+    LBA: number,
+    Type: EnumTrackType,
+    Filename: string;
+    SectorLength: number;
+}
+
+EnumTrackType {
+    Type_Audio,
+    Type_Data
+}
+
