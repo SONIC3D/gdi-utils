@@ -1,30 +1,38 @@
-GdRomDisc
-{
-    Lead_In_0:{}
-    Program_Area:Array<GdRomTrack>
-    Lead_Out_0:{}
+// 一个GdRom由2个密度区组成，低密度区由2个Track组成，高密度区由1-97个Track组成
+GdRomDisc {
+    Lead_In_0: any
+    Program_Area: Map<number, GdRomTrack>
+    Lead_Out_0: any
 }
 
-GdRomTrack
-{
-    TNO
-    Type:number
-    Index:Array<GdRomTrack_Index>(2)
+// 一个Track由2个Index组成，Index00和Index01
+GdRomTrack {
+    TrackId: number,
+    Type:number,
+    Indices:Map<number, GdRomTrackIndex>(2)
 }
 
-GdRomTrack_Index
-{
+// 一个Index的数据，可以由1或多个数据片拼合而成
+GdRomTrackIndex {
     FAD:number,
     Length:number,
-    DataSources:Array<>
+    ContentSources:Array<GdRomTrackIndexPart>
+}
+
+// 一个Index的数据片，由一个来源轨道数据(GdiSourceTrackContent)的特定起始位置和特定长度(字节数)来指定
+GdRomTrackIndexPart {
+    SourceTrackContent: GdiSourceTrackContent,
+    SourceTrackOffset: number,
+    Length: number
 }
 
 ===================================
 GdiSourceImage {
-    GdiContentFormat: EnumGdiContentFormat,
-    HDAreaPattern: number,
     TrackCount: number,
     Tracks: Array<GdiSourceTrack>
+
+    GdiContentFormat: EnumGdiContentFormat,
+    HDAreaPattern: number,
 }
 
 EnumGdiContentFormat {
@@ -36,12 +44,27 @@ GdiSourceTrack {
     TrackId: number
     LBA: number,
     Type: EnumTrackType,
+    SectorSize: number;
     Filename: string;
-    SectorLength: number;
+
+    Content: GdiSourceTrackContent;
 }
 
 EnumTrackType {
     Type_Audio,
     Type_Data
+}
+
+GdiSourceTrackContent {
+    OwnerTrack: GdiSourceTrack;
+    FileLength: number;
+    FileSectorLength: number;
+    TrackContentFormat: EnumTrackContentFormat;
+    Index01Offset: number;
+}
+
+EnumTrackContentFormat {
+    Fmt_General,
+    Fmt_Redump
 }
 
