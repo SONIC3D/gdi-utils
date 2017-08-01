@@ -11,22 +11,22 @@ GdRomDisc {
 // 一个Track由2个Index组成，Index00和Index01
 GdRomTrack {
     TrackId: number,
-    Type:number,
-    Length:number,
-    Indices:Map<number, GdRomTrackIndex>(2)
+    Type: number,
+    Length: number,
+    Indices: Map<number, GdRomTrackIndex>(2)
 }
 
 // 一个Index的数据，可以由1或多个数据片拼合而成
 GdRomTrackIndex {
-    FAD:number,
-    Length:number,
-    ContentSources:Array<GdRomTrackIndexPart>
+    FAD: number,
+    Length: number,
+    ContentParts: Array<GdRomTrackIndexPart>
 }
 
-// 一个Index的数据片，由一个来源轨道数据(GdiSourceTrackContent)的特定起始位置和特定长度(字节数)来指定
+// 一个Index的数据片，由一个来源轨道文件的特定起始位置和特定长度(字节数)来指定
 GdRomTrackIndexPart {
-    SourceTrackContent: GdiSourceTrackContent,
-    SourceTrackOffset: number,
+    Filename: string,
+    Offset: number,
     Length: number
 }
 
