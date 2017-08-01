@@ -1,14 +1,18 @@
 // 一个GdRom由2个密度区组成，低密度区由2个Track组成，高密度区由1-97个Track组成
 GdRomDisc {
     Lead_In_0: any
-    Program_Area: Map<number, GdRomTrack>
+    SD_Program_Area: Map<number, GdRomTrack>
     Lead_Out_0: any
+    Lead_In_1: any
+    HD_Program_Area: Map<number, GdRomTrack>
+    Lead_Out_1: any
 }
 
 // 一个Track由2个Index组成，Index00和Index01
 GdRomTrack {
     TrackId: number,
     Type:number,
+    Length:number,
     Indices:Map<number, GdRomTrackIndex>(2)
 }
 
