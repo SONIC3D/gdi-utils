@@ -8,35 +8,44 @@ GdRomDisc {
     Lead_Out_1: any
 }
 
+EnumGdRomTrackType {
+    Audio,
+    Data
+}
+
 // 一个Track由2个Index组成，Index00和Index01
 GdRomTrack {
-    TrackId: number,
-    Type: number,
-    Length: number,
-    Indices: Map<number, GdRomTrackIndex>(2)
+    TrackNO: number;
+    Type: number;
+    Length: number;
+    Indices: Map<number, GdRomTrackIndex>(2);
 }
 
 // 一个Index的数据，可以由1或多个数据片拼合而成
 GdRomTrackIndex {
-    FAD: number,
-    Length: number,
-    ContentParts: Array<GdRomTrackIndexPart>
+    FAD: number;
+    Length: number;
+    ContentParts: Array<GdRomTrackIndexPart>;
 }
 
-// 一个Index的数据片，由一个来源轨道文件的特定起始位置和特定长度(字节数)来指定
+// 一个Index的数据片，由一个数据Buffer或者一个来源轨道文件的特定起始位置和特定长度(字节数)来指定
 GdRomTrackIndexPart {
-    Filename: string,
-    Offset: number,
-    Length: number
+    FAD: number;
+
+    Content: Buffer;
+
+    Filename: string;
+    Offset: number;
+    Length: number;
 }
 
 ===================================
 GdiSourceImage {
-    TrackCount: number,
-    Tracks: Array<GdiSourceTrack>
+    TrackCount: number;
+    Tracks: Array<GdiSourceTrack>;
 
-    GdiContentFormat: EnumGdiContentFormat,
-    HDAreaPattern: number,
+    GdiContentFormat: EnumGdiContentFormat;
+    HDAreaPattern: number;
 }
 
 EnumGdiContentFormat {
@@ -45,9 +54,9 @@ EnumGdiContentFormat {
 }
 
 GdiSourceTrack {
-    TrackId: number
-    LBA: number,
-    Type: EnumTrackType,
+    TrackNO: number;
+    LBA: number;
+    Type: EnumTrackType;
     SectorSize: number;
     Filename: string;
 
@@ -55,8 +64,8 @@ GdiSourceTrack {
 }
 
 EnumTrackType {
-    Type_Audio,
-    Type_Data
+    Audio,
+    Data
 }
 
 GdiSourceTrackContent {
