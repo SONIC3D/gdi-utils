@@ -240,7 +240,7 @@ module gdiwriter {
             let _cpBuf: Buffer = Buffer.alloc(_cpBufLenCurrLoop);   // Reallocate buffer for first copying buffer chunk.
             let _totalBytesWritten: number = 0;
             while (_totalByteLenLeft > 0) {
-                if (_cpBufLenCurrLoop != _totalByteLenLeft) {
+                if (_cpBufLenCurrLoop > _totalByteLenLeft) {
                     // Reallocate buffer for last copying buffer chunk(a smaller buffer chunk).
                     _cpBuf = Buffer.alloc(_totalByteLenLeft);
                     _cpBufLenCurrLoop = _totalByteLenLeft;
@@ -258,7 +258,7 @@ module gdiwriter {
                 // Prepare for reading next chunk of data from source track file
                 _readOffsetCurrLoop += _cpBufLenCurrLoop;
                 _writeOffsetCurrLoop += _cpBufLenCurrLoop;
-                _totalByteLenLeft = srcTrackContentByteLength - _readOffsetCurrLoop;
+                _totalByteLenLeft -= _cpBufLenCurrLoop;
                 _totalBytesWritten += _cpBufLenCurrLoop;
             }
 
