@@ -191,10 +191,15 @@ module gdiwriter {
                         _arrSrcTrackContentByteLength.push(_srcTrackContentByteLength);
 
                         let _nextTrack = this.m_gdiDisc.tracks.get(i + 1);
-                        if (_nextTrack.content.isValid) {
-                            _arrSrcTrack.push(_nextTrack);
-                            _arrSrcTrackFileOffset.push(0);
-                            _arrSrcTrackContentByteLength.push(_currTrack.sectorSize * 150);
+                        if (_nextTrack != undefined) {
+                            if (_nextTrack.content.isValid) {
+                                _arrSrcTrack.push(_nextTrack);
+                                _arrSrcTrackFileOffset.push(0);
+                                _arrSrcTrackContentByteLength.push(_currTrack.sectorSize * 150);
+                            }
+                        } else {
+                            // Current track is the last track of Pattern II disc layout in a Redump format gdi. Do nothing.
+                            // TODO: For Redump format Pattern II disc layout (track count >= 4 and the last track is Audio type), additional investigation should be done to confirm the 150 sectors of data in tail of the last track should be skipped.
                         }
                         this._copyMultiTracksContent(_arrSrcTrack, _arrSrcTrackFileOffset, _arrSrcTrackContentByteLength, _outTrackFile_FD, 0);
                     } else {
