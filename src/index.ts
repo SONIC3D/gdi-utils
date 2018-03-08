@@ -7,10 +7,47 @@
  *
  * Copyright (c) 2017 "SONIC3D <sonic3d@gmail.com>"
  */
-import { GDITrack, GDIDisc, GeneralGDIWriter } from "./gdi-parser";
+import {IGDILogger, GDITrack, GDIDisc, GeneralGDIWriter} from "./gdi-parser";
 import * as ascli from "ascli";
 
 module app {
+    /**
+     * A sample custom logger to demonstrate how to write a custom logger for gdi-utils.
+     * It's actually same as the default logger implementation in gdi-utils
+     */
+    class CustomLoggerSample implements IGDILogger {
+        protected static s_instance: CustomLoggerSample;
+
+        public static getInstance(): CustomLoggerSample {
+            if (CustomLoggerSample.s_instance == undefined) {
+                CustomLoggerSample.s_instance = new CustomLoggerSample();
+            }
+            return CustomLoggerSample.s_instance;
+        }
+
+        protected m_console: Console;
+
+        protected constructor() {
+            this.m_console = console;
+        }
+
+        public error(message?: any, ...optionalParams: any[]): void {
+            this.m_console.error(message, ...optionalParams);
+        }
+
+        public warn(message?: any, ...optionalParams: any[]): void {
+            this.m_console.warn(message, ...optionalParams);
+        }
+
+        public log(message?: any, ...optionalParams: any[]): void {
+            this.m_console.log(message, ...optionalParams);
+        }
+
+        public info(message?: any, ...optionalParams: any[]): void {
+            this.m_console.info(message, ...optionalParams);
+        }
+    }
+
     export class MainEntry {
         public static create(inputGdi: string, outputMode: number, outputDir: string): MainEntry {
             let retVal: MainEntry = new MainEntry();
@@ -20,11 +57,13 @@ module app {
             return retVal;
         }
 
+        protected m_logger: CustomLoggerSample;
         protected m_inputGdi: string;
         protected m_outputDir: string;
         protected m_outputMode: number;
 
         constructor() {
+            this.m_logger = CustomLoggerSample.getInstance();
             // console.log("MainEntry created!");
         }
 
