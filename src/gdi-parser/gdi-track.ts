@@ -10,13 +10,15 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as util from 'util';
-import { Buffer } from 'buffer';
-import { Debug } from './dbg-util';
-import { GDIDisc } from './gdi-disc';
+import {Buffer} from 'buffer';
+import {Debug, IGDILogger, StdGdiLogger} from './dbg-util';
+import {GDIDisc} from './gdi-disc';
 
 module gditrack {
     export class GDITrack {
         protected static debugLog: (msg: string, ...param: any[]) => void = util.debuglog("GDITrack");
+
+        protected m_logger: IGDILogger;
 
         protected m_parentGdi: GDIDisc;
         protected m_fileDir: string;
@@ -30,11 +32,21 @@ module gditrack {
 
         protected m_content: GDITrackContent;
 
+        set logger(nv: IGDILogger) {
+            this.m_logger = nv;
+        }
+
         get content(): GDITrackContent {
             return this.m_content;
         }
 
-        constructor(parentGdi: GDIDisc, trackFileDir: string, indexInParentGdi: number, lba: number, type: number, sectorSize: number, filename: string, unknown: number) {
+        constructor(parentGdi: GDIDisc, trackFileDir: string, indexInParentGdi: number, lba: number, type: number, sectorSize: number, filename: string, unknown: number, customLogger?: IGDILogger) {
+            if (customLogger != undefined) {
+                this.m_logger = customLogger;
+            } else {
+                this.m_logger = StdGdiLogger.getInstance();
+            }
+
             this.m_parentGdi = parentGdi;
             this.m_fileDir = trackFileDir;
             this.m_idxInParentGdi = indexInParentGdi;
@@ -125,7 +137,7 @@ module gditrack {
             if (this.content.isValid) {
                 trackLengthInSector = this.content.lengthInSector;
             } else {
-                console.log("Failed to read data from track! Track length is set to zero.");
+                this.m_logger.log("Failed to read data from track! Track length is set to zero.");
             }
             return this.startLBA_Data + trackLengthInSector;
         }
@@ -151,7 +163,7 @@ module gditrack {
                     }
                 } else {
                     Debug.error("GDITrack.isPreGapDataEmbedded Error: Failed to read data from track!");
-                    console.log("Failed to read data from track! Assume it's not a redump gdi track.");
+                    this.m_logger.log("Failed to read data from track! Assume it's not a redump gdi track.");
                 }
             }
             return retVal;
@@ -256,18 +268,18 @@ module gditrack {
 
         public printInfo(): void {
             let _valid = this.content.isValid;
-            console.log(`Valid:                             ${_valid ? "valid" : "invalid"}`);
+            this.m_logger.log(`Valid:                             ${_valid ? "valid" : "invalid"}`);
             if (_valid) {
-                console.log(`Size(Byte):                        ${this.content.lengthInByte}`);
-                console.log(`Size(Sector):                      ${this.content.lengthInSector}`);
-                console.log(`PreGap length:                     ${this.preGapLengthInSector}`);
-                console.log(`Start LBA(PreGap):                 ${this.startLBA_PreGap}`);
-                console.log(`Start LBA(Data):                   ${this.startLBA_Data}`);
-                console.log(`Normalized Start LBA(PreGap):      ${this.normalizedStartLBA_PreGap}`);
-                console.log(`Normalized Start LBA(Data):        ${this.normalizedStartLBA_Data}`);
-                console.log(`End LBA:                           ${this.endLBA}`);
-                console.log(`PreGap data embedded:              ${this.isPreGapDataEmbedded}`);
-                console.log(`Overlapped with previous track:    ${this.isOverlappedWithPreviousTrack}`);
+                this.m_logger.log(`Size(Byte):                        ${this.content.lengthInByte}`);
+                this.m_logger.log(`Size(Sector):                      ${this.content.lengthInSector}`);
+                this.m_logger.log(`PreGap length:                     ${this.preGapLengthInSector}`);
+                this.m_logger.log(`Start LBA(PreGap):                 ${this.startLBA_PreGap}`);
+                this.m_logger.log(`Start LBA(Data):                   ${this.startLBA_Data}`);
+                this.m_logger.log(`Normalized Start LBA(PreGap):      ${this.normalizedStartLBA_PreGap}`);
+                this.m_logger.log(`Normalized Start LBA(Data):        ${this.normalizedStartLBA_Data}`);
+                this.m_logger.log(`End LBA:                           ${this.endLBA}`);
+                this.m_logger.log(`PreGap data embedded:              ${this.isPreGapDataEmbedded}`);
+                this.m_logger.log(`Overlapped with previous track:    ${this.isOverlappedWithPreviousTrack}`);
             }
         }
     }

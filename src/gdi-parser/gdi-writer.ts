@@ -10,10 +10,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as util from 'util';
-import { Buffer } from 'buffer';
-import { Debug } from './dbg-util';
-import { GDITrack } from './gdi-track';
-import { GDIDisc } from './gdi-disc';
+import {Buffer} from 'buffer';
+import {IGDILogger, StdGdiLogger} from './dbg-util';
+import {GDITrack} from './gdi-track';
+import {GDIDisc} from './gdi-disc';
 
 module gdiwriter {
     export interface IGDIWriter {
@@ -21,28 +21,37 @@ module gdiwriter {
     }
 
     export class GeneralGDIWriter implements IGDIWriter {
-        public static create(gdiDiscObj: GDIDisc, outputDir: string): GeneralGDIWriter {
+        public static create(gdiDiscObj: GDIDisc, outputDir: string, customLogger?: IGDILogger): GeneralGDIWriter {
             let retVal: GeneralGDIWriter = new GeneralGDIWriter();
             if (!retVal.init(gdiDiscObj, outputDir)) {
                 retVal = undefined;
             }
+            if ((customLogger != undefined) && (retVal != undefined)) {
+                retVal.logger = customLogger;
+            }
             return retVal;
         }
 
+        protected m_logger: IGDILogger;
         protected m_gdiDisc: GDIDisc;
         protected m_outputDir: string;
 
+        set logger(nv: IGDILogger) {
+            this.m_logger = nv;
+        }
+
         public constructor() {
+            this.m_logger = StdGdiLogger.getInstance();
         }
 
         public init(gdiDiscObj: GDIDisc, outputDir: string): boolean {
             // validate if gdiDiscObj is valid and output dir exists
             let retVal = true;
             if (!gdiDiscObj.isValid) {
-                console.log("Loaded GDI image is not valid. Failed to initialize general gdi writer.");
+                this.m_logger.log("Loaded GDI image is not valid. Failed to initialize general gdi writer.");
                 retVal = false;
             } else if (!fs.existsSync(outputDir)) {
-                console.log("Output directory does not exist. Failed to initialize general gdi writer.");
+                this.m_logger.log("Output directory does not exist. Failed to initialize general gdi writer.");
                 retVal = false;
             } else {
                 this.m_gdiDisc = gdiDiscObj;
@@ -72,8 +81,8 @@ module gdiwriter {
 
             if (_gdiFileStream) {
                 _gdiFileStream.on('error', (err: any) => {
-                    console.log("File write steam error:");
-                    console.log(err);
+                    this.m_logger.log("File write steam error:");
+                    this.m_logger.log(err);
                     _gdiFileStream.end();
                 });
 
@@ -133,11 +142,11 @@ module gdiwriter {
                     // Close file and this is the end of this track
                     fs.closeSync(_outTrackFile_FD);
                 } else {
-                    console.log(`Invalid source track found when trying to write output track, track ${i} is skipped...`);
+                    this.m_logger.log(`Invalid source track found when trying to write output track, track ${i} is skipped...`);
                 }
-                console.log(`Track ${i} is finished copying.`);
+                this.m_logger.log(`Track ${i} is finished copying.`);
             }
-            console.log(`>>> Low density area is finished copying. <<<`);
+            this.m_logger.log(`>>> Low density area is finished copying. <<<`);
 
             // Write tracks in high density area
             let _cntTrks = this.m_gdiDisc.trackCount;
@@ -213,11 +222,11 @@ module gdiwriter {
                     // Close file and this is the end of this track
                     fs.closeSync(_outTrackFile_FD);
                 } else {
-                    console.log(`Invalid source track found when trying to write output track, track ${i} is skipped...`);
+                    this.m_logger.log(`Invalid source track found when trying to write output track, track ${i} is skipped...`);
                 }
-                console.log(`Track ${i} is finished copying.`);
+                this.m_logger.log(`Track ${i} is finished copying.`);
             }
-            console.log(`>>> High density area is finished copying! <<<`);
+            this.m_logger.log(`>>> High density area is finished copying! <<<`);
         }
 
         /**
@@ -251,7 +260,7 @@ module gdiwriter {
                 if (outFileFD) {
                     let bytesActuallyWritten: number = fs.writeSync(outFileFD, _cpBuf, 0, _cpBufLenCurrLoop, _writeOffsetCurrLoop);
                     if (bytesActuallyWritten != _cpBufLenCurrLoop) {
-                        console.log(`Track write wrong on track ${srcTrack.trackId}`);
+                        this.m_logger.log(`Track write wrong on track ${srcTrack.trackId}`);
                         break;  // break out of the buffer copying loop, directly go to close file procedure
                     }
                 }

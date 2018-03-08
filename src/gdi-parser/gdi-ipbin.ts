@@ -7,23 +7,34 @@
  *
  * Copyright (c) 2017 "SONIC3D <sonic3d@gmail.com>"
  */
+import {IGDILogger, StdGdiLogger} from "./dbg-util";
 
 module gdiipbin {
     /**
      * InitialProgram is used to represent the content info of IP.BIN.
      */
     export class InitialProgram {
+        protected m_logger: IGDILogger;
         protected m_contentBuf: Buffer;
         protected m_refTrackList: Array<RefTrackInfo>;
 
-        public static createFromBuffer(dataBuf: Buffer): InitialProgram {
+        public static createFromBuffer(dataBuf: Buffer, customLogger?: IGDILogger): InitialProgram {
             let retVal: InitialProgram = new InitialProgram();
-            if (retVal)
+            if (retVal) {
                 retVal.initFromBuffer(dataBuf);
+                if (customLogger != undefined) {
+                    retVal.logger = customLogger;
+                }
+            }
             return retVal;
         }
 
+        set logger(nv: IGDILogger) {
+            this.m_logger = nv;
+        }
+
         public constructor() {
+            this.m_logger = StdGdiLogger.getInstance();
             this.m_contentBuf = Buffer.alloc(0x8000, 0x0);
             this.m_refTrackList = [];
         }
@@ -66,17 +77,17 @@ module gdiipbin {
         }
 
         public printInfo(): void {
-            console.log("IP.BIN content:");
+            this.m_logger.log("IP.BIN content:");
             let lenLines: number = this.m_contentBuf.length / 16;
             for (let i = 0; i < lenLines; i++) {
                 let start = i * 0x10;
                 let end = start + 0x10;
-                console.log(`${this.m_contentBuf.toString('hex', start, end)}`);
+                this.m_logger.log(`${this.m_contentBuf.toString('hex', start, end)}`);
             }
 
             let lenRefTrack = this.m_refTrackList.length;
             for (let i = 0; i < lenRefTrack; i++) {
-                console.log(`RefTrack ${i} startLBA: ${this.m_refTrackList[i].startLBA}`);
+                this.m_logger.log(`RefTrack ${i} startLBA: ${this.m_refTrackList[i].startLBA}`);
             }
         }
     }

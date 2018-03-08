@@ -7,7 +7,7 @@
  *
  * Copyright (c) 2017 "SONIC3D <sonic3d@gmail.com>"
  */
-import {IGDILogger, GDITrack, GDIDisc, GeneralGDIWriter} from "./gdi-parser";
+import {Debug, IGDILogger, GDITrack, GDIDisc, GeneralGDIWriter} from "./gdi-parser";
 import * as ascli from "ascli";
 
 module app {
@@ -64,6 +64,7 @@ module app {
 
         constructor() {
             this.m_logger = CustomLoggerSample.getInstance();
+            Debug.setLogger(this.m_logger);
             // console.log("MainEntry created!");
         }
 
@@ -86,13 +87,13 @@ module app {
                 gdiLayout.printInfo();
                 // gdiLayout.printIpBinInfo();
                 if (gdiLayout.isIpBinLoaded) {
-                    let gdiWriter = GeneralGDIWriter.create(gdiLayout, this.m_outputDir);
+                    let gdiWriter = GeneralGDIWriter.create(gdiLayout, this.m_outputDir, this.m_logger);
                     if (gdiWriter) {
                         gdiWriter.exec();
                     }
                 }
                 gdiLayout.unload();
-            });
+            }, this.m_logger);
         }
     }
 }

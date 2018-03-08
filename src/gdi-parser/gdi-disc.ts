@@ -11,14 +11,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
 import * as util from 'util';
-import { Buffer } from 'buffer';
-import { Debug } from './dbg-util';
-import { GDITrack } from './gdi-track';
-import { InitialProgram } from './gdi-ipbin';
+import {Buffer} from 'buffer';
+import {Debug, IGDILogger, StdGdiLogger} from './dbg-util';
+import {GDITrack} from './gdi-track';
+import {InitialProgram} from './gdi-ipbin';
 
 module gdidisc {
     export class GDIDisc {
         protected static debugLog: (msg: string, ...param: any[]) => void = util.debuglog("GDIDisc");
+        protected m_logger: IGDILogger;
         protected m_gdiFileDir: string;
         protected m_gdiFilename: string;
         protected m_trackCount: number;
@@ -29,6 +30,10 @@ module gdidisc {
         // IP.BIN data read from track 03 sector 0-16. There are 2048(0x800) bytes per sector, so it's 0x8000 in all.
         protected m_ipBin: InitialProgram;
         protected m_isIpBinLoaded: boolean;
+
+        set logger(nv: IGDILogger) {
+            this.m_logger = nv;
+        }
 
         get trackCount(): number {
             return this.m_trackCount;
@@ -79,6 +84,7 @@ module gdidisc {
         }
 
         protected constructor() {
+            this.m_logger = StdGdiLogger.getInstance();
             this.m_trackCount = 0;
             this.m_tracks = new Map<number, GDITrack>();
             this.m_gdiFileLineParser = (lineContent: string) => {
@@ -87,11 +93,14 @@ module gdidisc {
             this.m_isIpBinLoaded = false;
         }
 
-        public static createFromFile(gdiFilePath: string, parseCompleteCB?: (gdiLayout: GDIDisc) => void): GDIDisc {
+        public static createFromFile(gdiFilePath: string, parseCompleteCB?: (gdiLayout: GDIDisc) => void, customLogger?: IGDILogger): GDIDisc {
             let retVal: GDIDisc;
             if (fs.existsSync(gdiFilePath)) {
                 retVal = new GDIDisc();
                 retVal.loadFromFile(gdiFilePath, (parseCompleteCB ? parseCompleteCB : undefined));
+                if (customLogger != undefined) {
+                    retVal.logger = customLogger;
+                }
             }
             return retVal;
         }
@@ -142,7 +151,7 @@ module gdidisc {
                         // Skip 16 byte sync data and read 2048 user data from raw sector.
                         track3.content.readByteData(_ipbinDataBuf, i * 0x800, i * track3.sectorSize + 0x10, 0x800);
                     }
-                    this.m_ipBin = InitialProgram.createFromBuffer(_ipbinDataBuf);
+                    this.m_ipBin = InitialProgram.createFromBuffer(_ipbinDataBuf, this.m_logger);
                     retVal = true;
                 }
             }
@@ -202,18 +211,18 @@ module gdidisc {
                     if (trackFilename.length == 0)
                         trackFilename = arrStr[4];
                     let unknown = parseInt(arrStr[arrStr.length - 1]);
-                    this.m_tracks.set(trackIdx, new GDITrack(this, this.m_gdiFileDir, trackIdx, lba, type, sectorSize, trackFilename, unknown));
+                    this.m_tracks.set(trackIdx, new GDITrack(this, this.m_gdiFileDir, trackIdx, lba, type, sectorSize, trackFilename, unknown, this.m_logger));
                 }
             }
         }
 
         private _isValidTrackInfo(arrString: Array<string>): boolean {
             let retVal: boolean = ((arrString.length >= 6)
-            && (!isNaN(parseInt(arrString[0])) && (parseInt(arrString[0]) > 0))
-            && (!isNaN(parseInt(arrString[1])) && (parseInt(arrString[1]) >= 0))
-            && ((parseInt(arrString[2]) == 0) || (parseInt(arrString[2]) == 4))
-            && (parseInt(arrString[3]) == 2352)
-            && (!isNaN(parseInt(arrString[arrString.length - 1]))));
+                && (!isNaN(parseInt(arrString[0])) && (parseInt(arrString[0]) > 0))
+                && (!isNaN(parseInt(arrString[1])) && (parseInt(arrString[1]) >= 0))
+                && ((parseInt(arrString[2]) == 0) || (parseInt(arrString[2]) == 4))
+                && (parseInt(arrString[3]) == 2352)
+                && (!isNaN(parseInt(arrString[arrString.length - 1]))));
 
             return retVal;
         }
@@ -252,14 +261,14 @@ module gdidisc {
         public printInfo(): void {
             if (this.trackCount > 0) {
                 for (let [currTrkIdx, currTrack] of this.tracks) {
-                    console.log(`========== Track ${currTrkIdx} Info ==========`);
+                    this.m_logger.log(`========== Track ${currTrkIdx} Info ==========`);
                     if (currTrack) {
                         currTrack.printInfo();
                     } else {
-                        console.log("[Empty track]");
+                        this.m_logger.log("[Empty track]");
                     }
                 }
-                console.log(`========== End of Track Info ==========`);
+                this.m_logger.log(`========== End of Track Info ==========`);
             }
         }
 
